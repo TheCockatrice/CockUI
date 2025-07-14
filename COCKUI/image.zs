@@ -130,24 +130,30 @@ class UIImage : UIView {
         if(tex && tex.texID.isValid()) {
             if(imgStyle == Image_Aspect_Fit || imgStyle == Image_Aspect_Fill || imgStyle == Image_Aspect_Scale) {
                 double aspect = tex.size.y / tex.size.x;
-                parentSize.x = MIN(maxSize.x, parentSize.x);
-                size.x = MIN(tex.size.x * imgScale.x, parentSize.x);
-                size.y = size.x * aspect;
+                double w = !widthPin || widthPin.value != UIView.Size_Min ? calcPinnedWidth(parentSize) : 0;
+                // TODO: This is super bogus but is functional for Selaco right now
+                // TODO: Refactor this at some point to properly calculate aspect based minimum sizes
+                if(w) {
+                    size.x = w;
+                    size.y = size.x * aspect;
+                } else {
+                    parentSize.x = MIN(maxSize.x, parentSize.x);
+                    size.x = MIN(tex.size.x * imgScale.x, parentSize.x);
+                    size.y = size.x * aspect;
 
-                if(size.y > parentSize.y) {
-                    double diff = parentSize.y - size.y;
-                    size.y -= diff;
-                    size.x -= diff / aspect;
-                }
+                    if(size.y > parentSize.y) {
+                        double diff = parentSize.y - size.y;
+                        size.y -= diff;
+                        size.x -= diff / aspect;
+                    }
 
-                if(size.y > maxSize.y) {
-                    double diff = maxSize.y - size.y;
-                    size.y -= diff;
-                    size.x -= diff / aspect;
+                    if(size.y > maxSize.y) {
+                        double diff = maxSize.y - size.y;
+                        size.y -= diff;
+                        size.x -= diff / aspect;
+                    }
                 }
             } else if(imgStyle == Image_Scale) {
-                /*size.x = MIN(tex.size.x * imgScale.x, parentSize.x);
-                size.y = MIN(tex.size.y * imgScale.y, parentSize.y);*/
                 size.x = tex.size.x * imgScale.x;
                 size.y = tex.size.y * imgScale.y;
             } else {
