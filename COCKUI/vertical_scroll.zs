@@ -119,6 +119,18 @@ class UIVerticalScroll : UIControl {
         Super.Init(pos, size);
     }
 
+    override UIView baseInit() {
+        Super.baseInit();
+
+        scrollbarPadding = 0;
+        targetScroll = -1;
+        mouseScrollAmount = 100;
+        autoHideAdjustsSize = false;
+        rejectHoverSelection = true;
+
+        return self;
+    }
+
     override void tick() {
         Super.tick();
 

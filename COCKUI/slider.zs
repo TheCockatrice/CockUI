@@ -145,20 +145,9 @@ class UISlider : UIControl {
                         UIButtonState selectedHover = null,
                         UIButtonState selectedPressed = null) {
 
-        bgImage = new("UIImage").init((0,0), (0,0), "", bgSlices);
-        bgImage.pinToParent();
-        bgImage.raycastTarget = false;
-        add(bgImage);
-
-        // TODO: Allow a image for vertical bars too eventually
-        if(slideSlices && !isVertical) {
-            slideImage = new("UIImage").init((0,0), (0,0), "", slideSlices);
-            slideImage.pin(UIPin.Pin_Left);
-            slideImagePin = slideImage.pin(UIPin.Pin_Right, UIPin.Pin_Left);
-            slideImage.pin(UIPin.Pin_Top);
-            slideImage.pin(UIPin.Pin_Bottom);
-            slideImage.raycastTarget = false;
-            add(slideImage);
+        makeBackgroundImage(bgSlices);
+        if(slideSlices) {
+            makeSlideImage(slideSlices);
         }
 
         slideButt = new("UISliderButton").init((0,0), (16, 40),
@@ -178,6 +167,48 @@ class UISlider : UIControl {
         buttNeedsLayout = true;
         
         add(slideButt);
+    }
+
+    override UIView baseInit() {
+        Super.baseInit();
+
+        // Set default values
+        value = 0;
+        prevValue = 0;
+        increment = 1;
+        pageIncrement = 10;
+        minVal = 0;
+        maxVal = 100;
+        buttonSize = 24;
+        buttonScrollSize = 16;
+        minButtonScrollSize = 0;
+        isVertical = false;
+        scaleButton = false;
+        forceIncrement = false;
+        selectButtonOnFocus = false;
+        buttNeedsLayout = true;
+
+        return self;
+    }
+
+    virtual void makeBackgroundImage(NineSlice bgSlices) {
+        bgImage = new("UIImage").init((0,0), (0,0), "", bgSlices);
+        bgImage.pinToParent();
+        bgImage.raycastTarget = false;
+        add(bgImage);
+    }
+
+    virtual void makeSlideImage(NineSlice slideSlices) {
+        // TODO: Allow a image for vertical bars too eventually
+        if(slideSlices && !isVertical) {
+            slideImage = new("UIImage").init((0,0), (0,0), "", slideSlices);
+            slideImage.pin(UIPin.Pin_Left);
+            slideImagePin = slideImage.pin(UIPin.Pin_Right, UIPin.Pin_Left);
+            slideImage.pin(UIPin.Pin_Top);
+            slideImage.pin(UIPin.Pin_Bottom);
+            slideImage.raycastTarget = false;
+            add(slideImage);
+        }
     }
 
     override void onSelected(bool mouseSelection) {

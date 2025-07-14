@@ -144,6 +144,18 @@ mixin class DeserializeHelper {
         return j_str.s;
     }
 
+    protected static ui UIView deserializeOptionalView(JsonObject obj, string key, class<UIView> baseCls, UIView view, Map<Name, UIView> templates) {
+        JsonElement elem = obj.get(key);
+        if(!elem) return null;
+       
+        view = UIView.deserialize(elem, templates, baseCls, view);
+        if(!(view is baseCls)) {
+            ThrowAbortException("Deserializer: Expected a view of base type %s for key '%s', got %s", baseCls.getClassName(), key, view.getClassName());
+        }
+
+        return view;
+    }
+
     static int parseColor(String str) {
         return str.toint(0);
     }

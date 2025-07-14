@@ -74,7 +74,11 @@ extend class UIImage {
 extend class NineSlice {
     mixin DeserializeHelper;
 
-    private NineSlice _deserialize(JsonObject obj, string texName = "") {
+    private NineSlice _deserialize(JsonObject obj, string texName = "") { 
+        drawCenter = true;
+        scaleCenter = true;
+        scaleSides = true;
+        
         getOptionalDouble(obj, "top", tl.y);
         getOptionalDouble(obj, "left", tl.x);
         getOptionalDouble(obj, "bottom", br.y);

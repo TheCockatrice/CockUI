@@ -5,3 +5,5 @@
 #include "./label.zs"
 #include "./view_manager.zs"
 #include "./vertical_layout.zs"
+#include "./vertical_scroll.zs"
+#include "./slider.zs"

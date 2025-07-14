@@ -123,10 +123,14 @@ extend class UIView {
         return self;
     }
 
-    static UIView deserialize(JsonElement elem, Map<Name, UIView> templates = null) {
+    static UIView deserialize(JsonElement elem, Map<Name, UIView> templates = null, class<UIView> cls = 'UIView', UIView view = null) {
         if(!elem) ThrowAbortException("UIView: Expected a JsonElement, got null");
         JsonObject obj = JsonObject(elem);
         if(!obj) ThrowAbortException("UIView: expected a JsonObject, got a "..elem.getClassName());
+
+        if(view) {
+            return view._deserialize(obj, templates);
+        }
 
         // Peek the class of the UIView from the element
         // If none specified, this is a generic UIView
@@ -137,8 +141,8 @@ extend class UIView {
             return UIView(new(cls)).baseInit()._deserialize(obj, templates);
         }
 
-        // Create the menu of the specified class
-        return new("UIView").baseInit()._deserialize(obj, templates);
+        // Create the view of the specified class
+        return UIView(new(cls)).baseInit()._deserialize(obj, templates);
     }
 
 
@@ -209,6 +213,21 @@ extend class UIView {
 
         return false;
     } 
+}
+
+
+extend class UIControl {
+    override UIView _deserialize(JsonObject obj, Map<Name, UIView> templates) {
+        Super._deserialize(obj, templates);
+
+        getOptionalBool(obj, "disabled", disabled);
+        getOptionalBool(obj, "rejectHoverSelection", rejectHoverSelection);
+        getOptionalBool(obj, "cancelsHoverDeSelect", cancelsHoverDeSelect);
+        getOptionalString(obj, "command", command);
+        getOptionalInt(obj, "controlID", controlID);
+
+        return self;
+    }
 }
 
 

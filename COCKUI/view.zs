@@ -1178,6 +1178,13 @@ class UIControl : UIView {
         return self;
     }
 
+    override UIView baseInit() {
+        Super.baseInit();
+
+        raycastTarget = true;
+        return self;
+    }
+
     override bool raycastTest(Vector2 screenPos) {
         return !disabled && Super.raycastTest(screenPos);
 	}
