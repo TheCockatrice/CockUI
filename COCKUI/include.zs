@@ -23,5 +23,6 @@
 #include "./animation.zs"
 #include "./drawer.zs"
 #include "./colorpicker.zs"
+#include "./scriptcode.zs"
 
 #include "./JSON/include.zs
