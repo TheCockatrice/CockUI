@@ -185,8 +185,11 @@ mixin class UIDrawer {
         
         adjustXY(left, top, flags);
         
-        int x = int(left * scale.x);
-        int y = int(top * scale.y);
+        left *= scale.x;
+        top *= scale.y;
+
+        int x = int(left);
+        int y = int(top);
         Screen.SetClipRect(
             x, 
             y, 
@@ -206,8 +209,11 @@ mixin class UIDrawer {
 
         adjustXY(left, top, flags);
         
-        int x = int(left * scale.x);
-        int y = int(top * scale.y);
+        left *= scale.x;
+        top *= scale.y;
+
+        int x = int(left);
+        int y = int(top);
 
         Screen.Dim(
             col,
