@@ -225,7 +225,7 @@ extend class UIControl {
         getOptionalBool(obj, "cancelsHoverDeSelect", cancelsHoverDeSelect);
         getOptionalString(obj, "command", command);
         getOptionalInt(obj, "controlID", controlID);
-
+        
         return self;
     }
 }

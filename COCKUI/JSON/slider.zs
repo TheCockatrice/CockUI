@@ -19,21 +19,17 @@ extend class UISlider {
 
         JsonObject bgSlicesObj = JsonObject(obj.get("bgSlice"));
         if(bgSlicesObj) {
-            Console.Printf("UISlider::_deserialize: bgSlice is not null, deserializing\n");
             makeBackgroundImage(NineSlice.deserialize(bgSlicesObj));
         }
 
         JsonObject slideSlicesObj = JsonObject(obj.get("slideSlice"));
         if(slideSlicesObj) {
-            Console.Printf("UISlider::_deserialize: slideSlice is not null, deserializing\n");
             makeSlideImage(NineSlice.deserialize(slideSlicesObj));
         }
 
         slideButt = UISliderButton( deserializeOptionalView(obj, "button", 'UISliderButton', slideButt, templates) );
         if(slideButt.parent == null) add(slideButt);
 
-        Console.Printf("UISlider::_deserialize: slideButt is %s\n", slideButt.getClassName());
-        
         if(!slideButt) {
             // Slide button must be specified
             ThrowAbortException("UISlider::_deserialize No 'slideButt' inherited or specified for '%s'", getClassName());

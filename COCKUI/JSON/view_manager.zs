@@ -4,7 +4,7 @@ extend class UIViewManager {
 
         getOptionalDouble(obj, "itemSpacing", itemSpacing);
         getOptionalBool(obj, "ignoreHiddenViews", ignoreHiddenViews);
-
+        
         string contentModeString;
         if(getOptionalString(obj, "layoutMode", contentModeString)) {
             if(contentModeString ~== "None") layoutMode = Content_None;
