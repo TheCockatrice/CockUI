@@ -146,7 +146,7 @@ mixin class DeserializeHelper {
 
     protected static ui UIView deserializeOptionalView(JsonObject obj, string key, class<UIView> baseCls, UIView view, Map<Name, UIView> templates) {
         JsonElement elem = obj.get(key);
-        if(!elem) return null;
+        if(!elem) return view;
        
         view = UIView.deserialize(elem, templates, baseCls, view);
         if(!(view is baseCls)) {

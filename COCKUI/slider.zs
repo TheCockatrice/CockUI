@@ -191,6 +191,49 @@ class UISlider : UIControl {
         return self;
     }
 
+    override void applyTemplate(UIView template) {
+        Super.applyTemplate(template);
+        UISlider t = UISlider(template);
+
+        if(t) {
+            // Copy properties from the template
+            buttonFactor = t.buttonFactor;
+            value = t.value;
+            prevValue = t.prevValue;
+            increment = t.increment;
+            pageIncrement = t.pageIncrement;
+            minVal = t.minVal;
+            maxVal = t.maxVal;
+            buttonSize = t.buttonSize;
+            buttonScrollSize = t.buttonScrollSize;
+            minButtonScrollSize = t.minButtonScrollSize;
+            isVertical = t.isVertical;
+            scaleButton = t.scaleButton;
+            forceIncrement = t.forceIncrement;
+            selectButtonOnFocus = t.selectButtonOnFocus;
+
+            if(t.bgImage) bgImage = UIImage(subviews[t.indexOf(t.bgImage)]);
+            if(t.slideImage) slideImage = UIImage(subviews[t.indexOf(t.slideImage)]);
+            if(t.slideButt) slideButt = UISliderButton(subviews[t.indexOf(t.slideButt)]);
+
+            if(slideImage) {
+                slideImagePin = slideImage.firstPin(UIPin.Pin_Right);
+                if(!slideImagePin) slideImagePin = slideImage.pin(UIPin.Pin_Right, UIPin.Pin_Left);
+            }
+
+            if(slideButt) {
+                slideButt.forwardSelection = self;
+            }
+
+            if(!slideButt) {
+                ThrowAbortException("UISlider::applyTemplate: Missing slideButt in template '%s'", template.getClassName());
+            }
+
+            buttNeedsLayout = true;
+        }
+    }
+
+
     virtual void makeBackgroundImage(NineSlice bgSlices) {
         bgImage = new("UIImage").init((0,0), (0,0), "", bgSlices);
         bgImage.pinToParent();

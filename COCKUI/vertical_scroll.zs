@@ -122,14 +122,44 @@ class UIVerticalScroll : UIControl {
     override UIView baseInit() {
         Super.baseInit();
 
+        autoHideScrollBar = false;
         scrollbarPadding = 0;
         targetScroll = -1;
         mouseScrollAmount = 100;
         autoHideAdjustsSize = false;
         rejectHoverSelection = true;
+        animateTicks = 0;
 
         return self;
     }
+
+
+    override void applyTemplate(UIView template) {
+        Super.applyTemplate(template);
+        UIVerticalScroll t = UIVerticalScroll(template);
+
+        if(t) {
+            scrollbarPadding = t.scrollbarPadding;
+            autoHideScrollbar = t.autoHideScrollbar;
+            autoHideAdjustsSize = t.autoHideAdjustsSize;
+            hugEnd = t.hugEnd;
+            mouseScrollAmount = t.mouseScrollAmount;
+
+            if(t.mLayout)  mLayout = UIVerticalLayout(subviews[t.indexOf(t.mLayout)]);
+            if(t.scrollbar) scrollbar = UISlider(subviews[t.indexOf(t.scrollbar)]);
+
+            if(!mLayout || !scrollbar) {
+                ThrowAbortException("UIVerticalScroll::applyTemplate: Missing mLayout or scrollbar in template '%s'", template.getClassName());
+            }
+
+            layoutTopPin = mLayout.firstPin(UIPin.Pin_Top);
+
+            if(!layoutTopPin) {
+                layoutTopPin = mLayout.pin(UIPin.Pin_Top);
+            }
+        }
+    }
+
 
     override void tick() {
         Super.tick();

@@ -11,7 +11,7 @@ class UIViewManager : UIView {
     bool ignoreHiddenViews;
     ContentLayoutMode layoutMode;
 
-    protected Array<UIView> managedViews, unmanagedViews, backgroundViews;
+    protected Array<UIView> managedViews, unmanagedViews;
 
     UIViewManager init(Vector2 pos, Vector2 size) {
         Super.init(pos, size);
@@ -28,6 +28,22 @@ class UIViewManager : UIView {
         layoutMode = Content_None;
 
         return self;
+    }
+
+    override void applyTemplate(UIView template) {
+        Super.applyTemplate(template);
+        UIViewManager t = UIViewManager(template);
+
+        if(t) {
+            layoutWithChildren = t.layoutWithChildren;
+            itemSpacing = t.itemSpacing;
+            padding.left = t.padding.left;
+            padding.right = t.padding.right;
+            padding.top = t.padding.top;
+            padding.bottom = t.padding.bottom;
+            ignoreHiddenViews = t.ignoreHiddenViews;
+            layoutMode = t.layoutMode;
+        }
     }
 
     void addManaged(UIView v) {

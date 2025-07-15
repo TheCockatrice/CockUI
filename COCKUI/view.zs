@@ -179,8 +179,8 @@ class UIView ui {
         angle = template.angle;
         scale = template.scale;
         rotCenter = template.rotCenter;
-        cAlpha = template.cAlpha;
-        cScale = template.cScale;
+        cAlpha = 0;
+        cScale = (0,0);
         minSize = template.minSize;
         maxSize = template.maxSize;
         requiresLayout = true;

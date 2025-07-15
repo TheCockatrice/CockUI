@@ -10,7 +10,6 @@ extend class UIVerticalScroll {
 
         mLayout = UIVerticalLayout( deserializeOptionalView(obj, "layout", 'UIVerticalLayout', mLayout, templates) );
         scrollBar = UISlider( deserializeOptionalView(obj, "scrollBar", 'UISlider', scrollBar, templates) );
-        
 
         if(!mLayout) {
             // Create default layout
@@ -21,7 +20,7 @@ extend class UIVerticalScroll {
             mLayout.layoutMode = UIViewManager.Content_SizeParent;
             add(mLayout);
         } else {
-            if(mLayout.parent == null) {
+            if(!mLayout.parent) {
                 mLayout.pin(UIPin.Pin_Left);
                 mLayout.pin(UIPin.Pin_Right, offset: -(scrollbarPadding));
                 mLayout.layoutMode = UIViewManager.Content_SizeParent;
@@ -37,12 +36,14 @@ extend class UIVerticalScroll {
         if(!scrollBar) {
             // Scrollbar must be specified
             ThrowAbortException("UIVerticalScroll::_deserialize No scrollbar inherited or specified for '%s'", getClassName());
-        } else if(scrollBar.parent == null) {
-            scrollbar.pin(UIPin.Pin_Right);
-            if(!scrollbar.firstPin(UIPin.Pin_Top)) scrollbar.pin(UIPin.Pin_Top, offset: 5);
-            if(!scrollbar.firstPin(UIPin.Pin_Bottom)) scrollbar.pin(UIPin.Pin_Bottom, offset: -5);
+        } else {
+            if(!scrollbar.firstPin(UIPin.Pin_Right)) scrollbar.pin(UIPin.Pin_Right);
+            if(!scrollbar.firstPin(UIPin.Pin_Top)) scrollbar.pin(UIPin.Pin_Top);
+            if(!scrollbar.firstPin(UIPin.Pin_Bottom)) scrollbar.pin(UIPin.Pin_Bottom);
             scrollbar.increment = 0.1;
-            add(scrollbar);
+
+            if(scrollbar.parent != self)
+                add(scrollbar);
         }
 
         scrollBar.isVertical = true; // Forced vertical
