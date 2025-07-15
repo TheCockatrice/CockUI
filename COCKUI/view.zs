@@ -184,6 +184,7 @@ class UIView ui {
         minSize = template.minSize;
         maxSize = template.maxSize;
         requiresLayout = true;
+        id = template.id;
 
         // Copy pins
         pins.clear();
@@ -216,6 +217,10 @@ class UIView ui {
             newSv.baseInit();
             newSv.applyTemplate(sv);
             add(newSv);
+
+            if(newSV.id != "") {
+                viewLookup.insert(Name(newSv.id), newSv);
+            }
         }
     }
 
@@ -1183,6 +1188,21 @@ class UIControl : UIView {
 
         raycastTarget = true;
         return self;
+    }
+
+    override void applyTemplate(UIView view) {
+        Super.applyTemplate(view);
+        UIControl t = UIControl(view);
+
+        if(t) {
+            rejectHoverSelection = t.rejectHoverSelection;
+            cancelsHoverDeSelect = t.cancelsHoverDeSelect;
+            disabled = t.disabled;
+            command = t.command;
+            controlID = t.controlID;
+
+            // TODO: Somehow we have to copy the navigation links with the new hierarchy
+        }
     }
 
     override bool raycastTest(Vector2 screenPos) {

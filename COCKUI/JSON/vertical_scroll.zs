@@ -4,12 +4,17 @@ extend class UIVerticalScroll {
 
         getOptionalDouble(obj, "mouseScrollAmount", mouseScrollAmount);
         getOptionalDouble(obj, "scrollBarPadding", scrollBarPadding);
+        getOptionalDouble(obj, "barWidth", barWidth);
         getOptionalBool(obj, "autoHideScrollBar", autoHideScrollBar);
         getOptionalBool(obj, "autoHideAdjustsSize", autoHideAdjustsSize);
         getOptionalBool(obj, "hugEnd", hugEnd);
 
         mLayout = UIVerticalLayout( deserializeOptionalView(obj, "layout", 'UIVerticalLayout', mLayout, templates) );
         scrollBar = UISlider( deserializeOptionalView(obj, "scrollBar", 'UISlider', scrollBar, templates) );
+
+        if(barWidth == 0 && scrollBar) {
+            barWidth = scrollBar.frame.size.x;
+        }
 
         if(!mLayout) {
             // Create default layout

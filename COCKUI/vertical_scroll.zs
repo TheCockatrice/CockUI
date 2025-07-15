@@ -42,6 +42,7 @@ class UIVerticalScroll : UIControl {
     double targetScroll, sourceScroll;
     double mouseScrollAmount;
     double scrollbarPadding;                // Pad when scrollbar is showing via autohide/show
+    double barWidth;
     uint ticks, scrollStart;
 
     bool autoHideScrollbar, autoHideAdjustsSize, hugEnd;
@@ -80,15 +81,16 @@ class UIVerticalScroll : UIControl {
 
         self.config = config;
         scrollbarPadding = scrollPadding;
+        barWidth = config.barWidth;
 
         mLayout = new("UIVerticalLayout").init((0,0), (100,100));
         mLayout.pin(UIPin.Pin_Left);
         layoutTopPin = mLayout.pin(UIPin.Pin_Top);
-        mLayout.pin(UIPin.Pin_Right, offset: -(config.barWidth + scrollbarPadding));
+        mLayout.pin(UIPin.Pin_Right, offset: -(barWidth + scrollbarPadding));
         mLayout.layoutMode = UIViewManager.Content_SizeParent;
         add(mLayout);
 
-        scrollbar = new("UISlider").init((0,0), (config.barWidth, 0),
+        scrollbar = new("UISlider").init((0,0), (barWidth, 0),
             0, 1.0, 0.1,
             config.barBackground, config.barSlideBackground,
             config.buttStates[UIButton.State_Normal],
@@ -129,6 +131,7 @@ class UIVerticalScroll : UIControl {
         autoHideAdjustsSize = false;
         rejectHoverSelection = true;
         animateTicks = 0;
+        barWidth = 25;
 
         return self;
     }
@@ -143,6 +146,7 @@ class UIVerticalScroll : UIControl {
             autoHideScrollbar = t.autoHideScrollbar;
             autoHideAdjustsSize = t.autoHideAdjustsSize;
             hugEnd = t.hugEnd;
+            barWidth = t.barWidth;
             mouseScrollAmount = t.mouseScrollAmount;
 
             if(t.mLayout)  mLayout = UIVerticalLayout(subviews[t.indexOf(t.mLayout)]);
@@ -234,7 +238,7 @@ class UIVerticalScroll : UIControl {
                 if(autoHideAdjustsSize) {
                     let rpin = mLayout.firstPin(UIPin.Pin_Right);
                     if(rpin && rpin.offset ~== 0) {
-                        rpin.offset = -(config.barWidth + scrollbarPadding);
+                        rpin.offset = -(barWidth + scrollbarPadding);
                         mLayout.layout();
                     }
                 }
@@ -257,7 +261,7 @@ class UIVerticalScroll : UIControl {
                 if(autoHideAdjustsSize) {
                     let rpin = mLayout.firstPin(UIPin.Pin_Right);
                     if(rpin && rpin.offset ~== 0) {
-                        rpin.offset = -(config.barWidth + scrollbarPadding);
+                        rpin.offset = -(barWidth + scrollbarPadding);
                         mLayout.layout();
                     }
                 }
