@@ -144,11 +144,11 @@ mixin class DeserializeHelper {
         return j_str.s;
     }
 
-    protected static ui UIView deserializeOptionalView(JsonObject obj, string key, class<UIView> baseCls, UIView view, Map<Name, UIView> templates) {
+    protected static ui UIView deserializeOptionalView(JsonObject obj, string key, class<UIView> baseCls, UIView view, Map<Name, UIView> templates, UIView parentView = null) {
         JsonElement elem = obj.get(key);
         if(!elem) return view;
        
-        view = UIView.deserialize(elem, templates, baseCls, view);
+        view = UIView.deserialize(elem, templates, baseCls, view, parentView);
         if(!(view is baseCls)) {
             ThrowAbortException("Deserializer: Expected a view of base type %s for key '%s', got %s", baseCls.getClassName(), key, view.getClassName());
         }

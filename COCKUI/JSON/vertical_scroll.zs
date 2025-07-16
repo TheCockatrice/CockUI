@@ -1,6 +1,6 @@
 extend class UIVerticalScroll {
-    override UIView _deserialize(JsonObject obj, Map<Name, UIView> templates) {
-        Super._deserialize(obj, templates);
+    override UIView _deserialize(JsonObject obj, Map<Name, UIView> templates, UIView parentView) {
+        Super._deserialize(obj, templates, parentView);
 
         getOptionalDouble(obj, "mouseScrollAmount", mouseScrollAmount);
         getOptionalDouble(obj, "scrollBarPadding", scrollBarPadding);

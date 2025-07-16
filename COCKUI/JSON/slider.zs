@@ -1,6 +1,6 @@
 extend class UISlider {
-    override UIView _deserialize(JsonObject obj, Map<Name, UIView> templates) {
-        Super._deserialize(obj, templates);
+    override UIView _deserialize(JsonObject obj, Map<Name, UIView> templates, UIView parentView) {
+        Super._deserialize(obj, templates, parentView);
 
         getOptionalDouble(obj, "value", value);
         prevValue = value;

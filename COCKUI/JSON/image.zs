@@ -8,8 +8,8 @@ extend class UIImage {
         'scale', 'center', 'absolute', 'aspectFit', 'aspectScale', 'aspectFill', 'repeat'
     };
 
-    override UIView _deserialize(JsonObject obj, Map<Name, UIView> templates) {
-        Super._deserialize(obj, templates);
+    override UIView _deserialize(JsonObject obj, Map<Name, UIView> templates, UIView parentView) {
+        Super._deserialize(obj, templates, parentView);
 
         getOptionalDouble(obj, "imgScaleX", imgScale.x);
         getOptionalDouble(obj, "imgScaleY", imgScale.y);

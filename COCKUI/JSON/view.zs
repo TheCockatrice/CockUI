@@ -6,9 +6,10 @@ extend class UIView {
     Map<Name, UIPin> pinLookup;
 
 
-    protected virtual UIView _deserialize(JsonObject obj, Map<Name, UIView> templates = null) {
+    protected virtual UIView _deserialize(JsonObject obj, Map<Name, UIView> templates = null, UIView parentView = null) {
         // Apply template first and overwrite any properties after
         JsonString j_template = JsonString(obj.get("template"));
+        JsonString j_templateID = JsonString(obj.get("viewTemplate"));
         if(j_template && j_template.s != "") {
             let n = Name(j_template.s);
             UIView template = templates ? templates.getIfExists(n) : null;
@@ -17,6 +18,18 @@ extend class UIView {
             if(template) applyTemplate(template);
             else {
                 Console.Printf("\c[RED]UIView: Failed to find template view '%s'", j_template.s);
+            }
+        } else if(j_templateID && j_templateID.s != "") {
+            if(!parentView) {
+                ThrowAbortException("\c[RED]UIView: No parent view, view templating cannot be performed for template ID '%s'", j_templateID.s);
+            }
+            let topView = parentView.getMasterView();
+            let n = Name(j_templateID.s);
+            UIView template = topView.findViewByID(n);
+
+            if(template) applyTemplate(template);
+            else {
+                Console.Printf("\c[RED]UIView: Failed to find template from View ID '%s'", n);
             }
         }
         
@@ -107,7 +120,7 @@ extend class UIView {
         JsonArray j_subviews = JsonArray(obj.get("subViews"));
         if(j_subviews) {
             foreach(j_subview : j_subviews.arr) {
-                UIView subview = UIView.deserialize(j_subview, templates);
+                UIView subview = UIView.deserialize(j_subview, templates, parentView: self);
                 if(!subview) Console.Printf("\c[RED]UIView: Failed to deserialize subview from object %s", j_subview.getClassName());
                 else {
                     add(subview);
@@ -123,7 +136,7 @@ extend class UIView {
         return self;
     }
 
-    static UIView deserialize(JsonElement elem, Map<Name, UIView> templates = null, class<UIView> cls = 'UIView', UIView view = null) {
+    static UIView deserialize(JsonElement elem, Map<Name, UIView> templates = null, class<UIView> cls = 'UIView', UIView view = null, UIView parentView = null) {
         if(!elem) ThrowAbortException("UIView: Expected a JsonElement, got null");
         JsonObject obj = JsonObject(elem);
         if(!obj) ThrowAbortException("UIView: expected a JsonObject, got a "..elem.getClassName());
@@ -138,11 +151,11 @@ extend class UIView {
         if(getOptionalString(obj, "class", className)) {
             class<UIView> cls = (class<UIView>)(className);
             if(!cls) ThrowAbortException("UIView: No View class found for name '%s'", className);
-            return UIView(new(cls)).baseInit()._deserialize(obj, templates);
+            return UIView(new(cls)).baseInit()._deserialize(obj, templates, parentView);
         }
 
         // Create the view of the specified class
-        return UIView(new(cls)).baseInit()._deserialize(obj, templates);
+        return UIView(new(cls)).baseInit()._deserialize(obj, templates, parentView);
     }
 
 
@@ -212,13 +225,32 @@ extend class UIView {
         Console.Printf("\c[RED]UIView: Expected a JsonArray or JsonObject for padding, got a %s", j.getClassName());
 
         return false;
-    } 
+    }
+    
+    void buildFromJson(JsonObject obj) {
+        if(!obj) ThrowAbortException("UIView: Expected a JsonObject, got null");
+        _deserialize(obj);
+    }
+
+    void load(string filename) {
+        int lump = Wads.CheckNumForFullName("/" .. filename);
+		if(lump == -1){
+			ThrowAbortException("UIView::Load() Could not find %s", filename);
+		}
+
+		JsonElementOrError data = JSON.parse(Wads.ReadLump(lump), false);
+		if(data is "JsonError"){
+			ThrowAbortException("%s :  %s", filename, JsonError(data).what);
+		}
+
+        buildFromJson(JSONObject(data));
+    }
 }
 
 
 extend class UIControl {
-    override UIView _deserialize(JsonObject obj, Map<Name, UIView> templates) {
-        Super._deserialize(obj, templates);
+    override UIView _deserialize(JsonObject obj, Map<Name, UIView> templates, UIView parentView) {
+        Super._deserialize(obj, templates, parentView);
 
         getOptionalBool(obj, "disabled", disabled);
         getOptionalBool(obj, "rejectHoverSelection", rejectHoverSelection);

@@ -1,6 +1,6 @@
 extend class UIViewManager {
-    override UIView _deserialize(JsonObject obj, Map<Name, UIView> templates) {
-        Super._deserialize(obj, templates);
+    override UIView _deserialize(JsonObject obj, Map<Name, UIView> templates, UIView parentView) {
+        Super._deserialize(obj, templates, parentView);
 
         getOptionalDouble(obj, "itemSpacing", itemSpacing);
         getOptionalBool(obj, "ignoreHiddenViews", ignoreHiddenViews);
@@ -39,7 +39,7 @@ extend class UIViewManager {
                     continue;
                 }
 
-                UIView v = UIView.deserialize(j_view, templates);
+                UIView v = UIView.deserialize(j_view, templates, parentView: self);
                 if(v) {
                     addManaged(v);
 
