@@ -38,6 +38,10 @@ extend class UIView {
         getOptionalDouble(obj, "y", frame.pos.y);
         getOptionalDouble(obj, "width", frame.size.x);
         getOptionalDouble(obj, "height", frame.size.y);
+        getOptionalDouble(obj, "minWidth", minSize.x);
+        getOptionalDouble(obj, "minHeight", minSize.y);
+        getOptionalDouble(obj, "maxWidth", maxSize.x);
+        getOptionalDouble(obj, "maxHeight", maxSize.y);
         getOptionalString(obj, "id", id);
         getOptionalDouble(obj, "alpha", alpha);
         getOptionalDouble(obj, "scaleX", scale.x);

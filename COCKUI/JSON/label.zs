@@ -18,6 +18,18 @@ extend class UILabel {
         getOptionalint(obj, "charLimit", charLimit);
         getOptionalint(obj, "lineLimit", lineLimit);
         getOptionalint(obj, "verticalSpacing", verticalSpacing);
+        
+        // Font scale
+        double fScale = 1.0;
+        if(getOptionalDouble(obj, "fontScale", fScale)) {
+            if(fScale <= 0.0) {
+                ThrowAbortException("UILabel: Invalid font scale '%f' for label with text '%s' in object %s", fScale, text, obj.getClassName());
+            }
+            fontScale = (fScale,fScale);
+        }
+
+        getOptionalDouble(obj, "fontScaleX", fontScale.x);
+        getOptionalDouble(obj, "fontScaleY", fontScale.y);
 
         if(fontName == "" && fnt == null) {
             ThrowAbortException("UILabel: No font specified for label with text '%s' in object %s", text, obj.getClassName());

@@ -41,6 +41,18 @@ extend class UIButton {
                     }
                 }
             }
+
+            // Font scale
+            double fScale = 1.0;
+            if(getOptionalDouble(obj, "fontScale", fScale)) {
+                if(fScale <= 0.0) {
+                    ThrowAbortException("UILabel: Invalid font scale '%f' for label with text '%s' in object %s", fScale, text, obj.getClassName());
+                }
+                label.fontScale = (fScale,fScale);
+            }
+
+            getOptionalDouble(obj, "fontScaleX", label.fontScale.x);
+            getOptionalDouble(obj, "fontScaleY", label.fontScale.y);
         }
 
         // Set text padding
