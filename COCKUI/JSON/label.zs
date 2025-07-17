@@ -62,6 +62,28 @@ extend class UILabel {
         getOptionalDouble(obj, "minScale", mins);
         if(mins != double.max) minScale = desat;
 
+        // Get shadow offset
+        let j_shadowOffset = obj.get("shadowOffset");
+        if(j_shadowOffset) {
+            let ar = JsonArray(j_shadowOffset);
+            let obj2 = JsonObject(j_shadowOffset);
+
+            if(ar) {
+                double vals[2] = {double.max, double.max};
+                for(int i = 0; i < ar.arr.size() && i < 2; i++) {
+                    JsonNumber j_num = JsonNumber(ar.arr[i]);
+                    if(!j_num) ThrowAbortException("UILabel: Expected a number for shadowOffset, got a %s", ar.arr[i].getClassName());
+                    vals[i] = j_num.asDouble();
+                }
+
+                if(vals[0] != double.max) shadowOffset.x = vals[0];
+                if(vals[1] != double.max) shadowOffset.y = vals[1];
+            } else if(obj2) {
+                getOptionalDouble(obj2,"x", shadowOffset.x);
+                getOptionalDouble(obj2,"y", shadowOffset.y);
+            }
+        }
+
         return self;
     }
 }
