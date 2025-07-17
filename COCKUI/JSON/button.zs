@@ -53,6 +53,13 @@ extend class UIButton {
 
             getOptionalDouble(obj, "fontScaleX", label.fontScale.x);
             getOptionalDouble(obj, "fontScaleY", label.fontScale.y);
+
+            string col;
+            if(getOptionalString(obj, "shadowColor", col)) label.shadowColor = parseColor(col);
+            if(getOptionalString(obj, "textColor", col)) label.textColor = parseColor(col);
+            if(getOptionalString(obj, "stencilColor", col)) label.stencilColor = parseColor(col);
+            if(getOptionalString(obj, "blendColor", col)) label.blendColor = parseColor(col);
+            if(getOptionalString(obj, "textBackgroundColor", col)) label.textBackgroundColor = parseColor(col);
         }
 
         // Set text padding
