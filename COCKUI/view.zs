@@ -286,7 +286,7 @@ class UIView ui {
     }
 
     // Get absolute width defined by pins or frame
-    // Returns -1 if height is flexible as defined by pins
+    // Returns -1 if width is flexible as defined by pins
     double getLayoutWidthAbsolute() {
         if(widthPin && !widthPin.isFactor) {
             return widthPin.value + widthPin.offset;

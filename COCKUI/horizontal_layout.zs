@@ -55,6 +55,10 @@ class UIHorizontalLayout : UIViewManager {
                 if(ls == -1) ls = 0;
                 if(propo > -1) propoTotal += propo;
                 if(lso > -1) ls += lso;
+
+                // If there is no static size OR proportional size, take the layout size
+                if(ls == UIView.Size_Min && propo <= 0) ls = managed.frame.size.x;
+
                 staticSize += clamp(ls, managed.minSize.x, managed.maxSize.x);
 
                 if(i > 0) totalSpacing += itemSpacing;
@@ -62,7 +66,7 @@ class UIHorizontalLayout : UIViewManager {
             
             double xSpaceAvail = max(0, frame.size.x - staticSize - totalSpacing - (padding.left + padding.right));
 
-            // Layout each view, stretching/squashing proportional views to fit vertically
+            // Layout each view, stretching/squashing proportional views to fit
             for(int i = 0; i < managedViews.size(); i++) {
                 if(ignoreHiddenViews && managedViews[i].hidden) continue;
                 
@@ -116,6 +120,18 @@ class UIHorizontalLayout : UIViewManager {
         // Now layout subviews
         for(int i = 0; i < unmanagedViews.size(); i++) {
             unmanagedViews[i].layout(cScale, cAlpha);
+        }
+
+        // Adjust the vertical size of the view if necessary
+        if(heightPin && heightPin.value == UIView.Size_Min) {
+            double contentHeight = 0;
+            for(int i = 0; i < managedViews.size(); i++) {
+                if(!ignoreHiddenViews || !managedViews[i].hidden) {
+                    // TODO: Consider pins instead of the positioning, so a bottom pin can be used to size the parent view and views will properly stretch to the size of the parent
+                    contentHeight = MAX(contentHeight, managedViews[i].frame.size.y + (managedViews[i].frame.pos.y - padding.top) + heightPin.offset);
+                }
+            }
+            frame.size.y = MAX(contentHeight + padding.top + padding.bottom, minSize.y);
         }
 
         requiresLayout = false;

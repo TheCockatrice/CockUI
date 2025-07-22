@@ -228,9 +228,22 @@ class UILabel : UIView {
         }
     }
 
-    override void layout(Vector2 parentScale, double parentAlpha) {
+    override void layout(Vector2 parentScale, double parentAlpha, bool skipSubviews) {
         Super.layout(parentScale, parentAlpha);
 
+        if(!skipSubviews) layoutText();
+    }
+
+    override void onAdjustedPostLayout(UIView sourceView) {
+        layoutText();
+
+        if(heightPin && heightPin.value == UIView.Size_Min) {
+            if(multiline) frame.size.y = calcTextHeight(lines) + heightPin.offset;
+            else frame.size.y = ceil(fnt.getHeight() * fontScale.y) + heightPin.offset;
+        }
+    }
+
+    virtual void layoutText() {
         // Build brokenlines to cache some info about text layout
         if(multiline && fnt) {
             lines = fnt.breakLines(text, int((frame.size.x / fontScale.x) + 0.01));
