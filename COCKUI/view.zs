@@ -380,7 +380,7 @@ class UIView ui {
     }
 
     virtual void tick() {
-        if(requiresLayout) {
+        if(!hidden && requiresLayout) {
             if(parent && parent.layoutWithChildren) {
                 parent.layoutChildChanged(self);
             } else {
