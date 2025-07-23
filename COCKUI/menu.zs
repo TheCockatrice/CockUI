@@ -22,7 +22,7 @@ class UIMenu : GenericMenu {
 	int ticks;
 	bool hasDrawnOnce, hasCalledFirstTick;
 	bool ignoreUIScaling;
-	bool isModal;
+	bool isModal, isAnimated;
 	bool mouseCaptureBeforeMDOWN;
 
 	double lastUIScale;
@@ -155,6 +155,8 @@ class UIMenu : GenericMenu {
 
 		mouseX = mouseY = -1;
 
+		isAnimated = true;	// Comment out to allow 35fps menu when not animating
+
 		calcScale(scW, scH);
 	}
 
@@ -200,13 +202,16 @@ class UIMenu : GenericMenu {
 		
 		// We only get to set the animated status if we are the top menu
 		if(self == Menu.GetCurrentMenu()) {
-			let anim = animator && animator.animations.size();
-			let p = uiParentMenu;
-			while(p && !anim) {
-				if(p.animator && p.animator.animations.size()) anim = true;
-				p = p.uiParentMenu;
+			if(isAnimated) animated = true;
+			else {
+				let anim = animator && animator.animations.size();
+				let p = uiParentMenu;
+				while(p && !anim) {
+					if(p.animator && p.animator.animations.size()) anim = true;
+					p = p.uiParentMenu;
+				}
+				animated = anim;
 			}
-			animated = anim;
 		}
 	}
 

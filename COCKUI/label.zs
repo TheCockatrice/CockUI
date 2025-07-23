@@ -230,8 +230,7 @@ class UILabel : UIView {
 
     override void layout(Vector2 parentScale, double parentAlpha, bool skipSubviews) {
         Super.layout(parentScale, parentAlpha);
-
-        if(!skipSubviews) layoutText();
+        layoutText();
     }
 
     override void onAdjustedPostLayout(UIView sourceView) {
@@ -241,6 +240,8 @@ class UILabel : UIView {
             if(multiline) frame.size.y = calcTextHeight(lines) + heightPin.offset;
             else frame.size.y = ceil(fnt.getHeight() * fontScale.y) + heightPin.offset;
         }
+
+        requiresLayout = false;
     }
 
     virtual void layoutText() {

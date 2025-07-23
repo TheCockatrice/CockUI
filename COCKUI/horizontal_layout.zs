@@ -41,7 +41,7 @@ class UIHorizontalLayout : UIViewManager {
             double totalSpacing = 0;
             double propoTotal = 0;
             
-            for(int i = 0; i < managedViews.size(); i++) {
+            for(int i = 0, i2 = 0; i < managedViews.size(); i++) {
                 if(ignoreHiddenViews && managedViews[i].hidden) continue;
 
                 let managed = managedViews[i];
@@ -61,7 +61,8 @@ class UIHorizontalLayout : UIViewManager {
 
                 staticSize += clamp(ls, managed.minSize.x, managed.maxSize.x);
 
-                if(i > 0) totalSpacing += itemSpacing;
+                if(i2 > 0) totalSpacing += itemSpacing;
+                i2++;
             }
             
             double xSpaceAvail = max(0, frame.size.x - staticSize - totalSpacing - (padding.left + padding.right));
