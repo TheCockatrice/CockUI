@@ -66,7 +66,7 @@ class UIHorizontalLayout : UIViewManager {
             }
             
             double xSpaceAvail = max(0, frame.size.x - staticSize - totalSpacing - (padding.left + padding.right));
-
+             
             // Layout each view, stretching/squashing proportional views to fit
             for(int i = 0; i < managedViews.size(); i++) {
                 if(ignoreHiddenViews && managedViews[i].hidden) continue;

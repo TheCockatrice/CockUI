@@ -43,6 +43,20 @@ class UIViewManager : UIView {
             padding.bottom = t.padding.bottom;
             ignoreHiddenViews = t.ignoreHiddenViews;
             layoutMode = t.layoutMode;
+
+            // Copy managed view indexes
+            managedViews.clear();
+            for(int i = 0; i < t.managedViews.size(); i++) {
+                let idx = t.indexOf(t.managedViews[i]);
+                managedViews.push(viewAt(idx));
+            }
+
+            // Copy unmanaged view indexes
+            unmanagedViews.clear();
+            for(int i = 0; i < t.unmanagedViews.size(); i++) {
+                let idx = t.indexOf(t.unmanagedViews[i]);
+                unmanagedViews.push(viewAt(idx));
+            }
         }
     }
 

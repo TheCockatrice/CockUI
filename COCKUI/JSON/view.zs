@@ -272,12 +272,14 @@ extend class UIPin {
 
     private UIPin _deserialize(JsonObject obj) {
         getOptionalBool(obj, "isFactor", isFactor);
-        getOptionalDouble(obj, "value", value);
+        string valueString;
+        if(getOptionalString(obj, "value", valueString)) {
+            if(valueString ~== "min") {
+                value = UIView.Size_Min;
+            }
+        } else getOptionalDouble(obj, "value", value);
         getOptionalDouble(obj, "offset", offset);
         getOptionalInt(obj, "priority", priority);
-
-        JsonElement j_anchorElem = obj.get("anchor");
-        if(!j_anchorElem) ThrowAbortException("UIPin: No 'anchor' element found!");
 
         string anchorString, parentAnchorString;
         if(getOptionalString(obj, "anchor", anchorString)) {
@@ -291,14 +293,6 @@ extend class UIPin {
         } else {
             anchor = UIPin.Pin_Static;
             parentAnchor = UIPin.Pin_Static;
-        }
-
-        // Special case for string values, so far only "min" is supported
-        string tString;
-        if(getOptionalString(obj, "value", tString)) {
-            if(tString ~== "min") {
-                value = UIView.Size_Min;
-            }
         }
 
         return self;
