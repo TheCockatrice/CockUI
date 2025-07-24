@@ -23,12 +23,13 @@ class UIHorizontalLayout : UIViewManager {
         return (MIN(MAX(minSize.x, totalSize.x), maxSize.x), MIN(MAX(minSize.y, totalSize.y), maxSize.y));
     }
 
-    override void layout(Vector2 parentScale, double parentAlpha) {
+    override void layout(Vector2 parentScale, double parentAlpha, bool skipSubviews) {
         cScale = (parentScale ~== (0,0) ? calcScale() : (parentScale.x * scale.x, parentScale.y * scale.y));
         cAlpha = (parentAlpha == -1 ? calcAlpha() : parentAlpha) * alpha;
 
         // Process anchor pins
-        processPins();
+        if(!layingOutSubviews) processPins();
+        if(skipSubviews) return;    // Nothing else to do
 
         frame.size.y -= padding.top + padding.bottom;
 

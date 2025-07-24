@@ -125,6 +125,12 @@ class UIViewManager : UIView {
         removeUnManaged(v);
     }
 
+    override void layoutSubviews() {
+        layingOutSubviews = true;
+        layout();
+        layingOutSubviews = false;
+    }
+
 
     UIView getManaged(int i) {
         return managedViews[i];
