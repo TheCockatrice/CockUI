@@ -30,7 +30,7 @@ extend class UILabel {
 
         getOptionalDouble(obj, "fontScaleX", fontScale.x);
         getOptionalDouble(obj, "fontScaleY", fontScale.y);
-
+        
         if(fontName == "" && fnt == null) {
             ThrowAbortException("UILabel: No font specified for label with text '%s' in object %s", text, obj.getClassName());
         }
@@ -43,6 +43,15 @@ extend class UILabel {
         // Determine text alignment
         if(textAlignString != "") {
             textAlign = UIView.GetAlignmentFromString(textAlignString, Align_Center);
+        }
+
+        double fntSize = 0;
+        if(getOptionalDouble(obj, "fontHeight", fntSize) || getOptionalDouble(obj, "fontSize", fntSize)) {
+            if(fntSize <= 1) {
+                ThrowAbortException("UILabel: Invalid font size '%f' for label with text '%s' in object %s", fntSize, text, obj.getClassName());
+            }
+
+            scaleToHeight(fntSize);
         }
 
         // Various colors
