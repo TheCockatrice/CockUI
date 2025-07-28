@@ -60,6 +60,9 @@ extend class UIButton {
             if(getOptionalString(obj, "stencilColor", col)) label.stencilColor = parseColor(col);
             if(getOptionalString(obj, "blendColor", col)) label.blendColor = parseColor(col);
             if(getOptionalString(obj, "textBackgroundColor", col)) label.textBackgroundColor = parseColor(col);
+
+            // Extended info can be put in "label" sub object
+            deserializeOptionalView(obj, "label", 'UILabel', label, templates);
         }
 
         // Set text padding

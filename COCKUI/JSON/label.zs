@@ -8,12 +8,14 @@ extend class UILabel {
         getOptionalString(obj, "font", fontName);
         getOptionalString(obj, "textAlign", textAlignString);
         getOptionalBool(obj, "multiline", multiline);
+        getOptionalBool(obj, "multiLine", multiline);
         getOptionalBool(obj, "noFilter", noFilter);
         getOptionalBool(obj, "clipText", clipText);
         getOptionalBool(obj, "pixelAlign", pixelAlign);
         getOptionalBool(obj, "drawShadow", drawShadow);
         getOptionalBool(obj, "shadowStencil", shadowStencil);
         getOptionalBool(obj, "monospace", monospace);
+        getOptionalBool(obj, "monoSpace", monospace);
         getOptionalBool(obj, "autoScale", autoScale);
         getOptionalint(obj, "charLimit", charLimit);
         getOptionalint(obj, "lineLimit", lineLimit);
@@ -35,9 +37,11 @@ extend class UILabel {
             ThrowAbortException("UILabel: No font specified for label with text '%s' in object %s", text, obj.getClassName());
         }
 
-        fnt = Font.GetFont(fontName);
         if(!fnt) {
-            ThrowAbortException("UILabel: No font found for name '%s' in object %s", fontName, obj.getClassName());
+            fnt = Font.GetFont(fontName);
+            if(!fnt) {
+                ThrowAbortException("UILabel: No font found for name '%s' in object %s", fontName, obj.getClassName());
+            }
         }
 
         // Determine text alignment
@@ -69,7 +73,7 @@ extend class UILabel {
 
         double mins = double.max;
         getOptionalDouble(obj, "minScale", mins);
-        if(mins != double.max) minScale = desat;
+        if(mins != double.max) minScale = mins;
 
         // Get shadow offset
         let j_shadowOffset = obj.get("shadowOffset");
