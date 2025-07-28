@@ -189,6 +189,7 @@ extend class UIView {
         else if(alignString ~== "TopRight") return Align_TopRight;
         else if(alignString ~== "BottomLeft") return Align_BottomLeft;
         else if(alignString ~== "BottomRight") return Align_BottomRight;
+        else if(alignString ~== "BottomCenter") return Align_Bottom | Align_Center;
         
         return defaultAlign;
     }
