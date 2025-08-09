@@ -25,8 +25,8 @@ class CockHandler : StaticEventHandler {
 
     override void InterfaceProcess(ConsoleEvent e) {
         if(e.Name == "EngineInitialize") {
-            loadTemplates(developer > 0);
-            Console.Printf("\c[GREEN]CockHandler::loadTemplates() Loaded %d templates", templateViews.CountUsed());
+            loadTemplates("interfaces/templates.json", developer > 0);
+            Console.Printf("\c[GREEN]CockHandler: Loaded %d templates", templateViews.CountUsed());
             return;
         }
         
@@ -40,22 +40,41 @@ class CockHandler : StaticEventHandler {
         EventHandler.SendInterfaceEvent(consolePlayer, "EngineInitialize");
     }
 
-    ui void loadTemplates(bool haltOnError = true) {
-        int lump = Wads.CheckNumForFullName("/interfaces/templates.json");
-		if(lump == -1){
-			if(haltOnError) ThrowAbortException("CockHandler::loadTemplates() Could not find /interfaces/templates.json");
-            else Console.Printf("\c[RED]CockHandler::loadTemplates() Could not find /interfaces/templates.json");
+    ui void loadTemplates(string filename, bool haltOnError = true) {
+        if(developer) Console.Printf("\c[green]CockHandler: Loading templates from %s", filename);
+
+        int lump = Wads.CheckNumForFullName(filename);
+		if(lump == -1) {
+			if(haltOnError) ThrowAbortException("CockHandler::loadTemplates() Could not find %s", filename);
+            else Console.Printf("\c[RED]CockHandler::loadTemplates() Could not find %s", filename);
             return;
 		}
 
 		JsonElementOrError data = JSON.parse(Wads.ReadLump(lump),false);
 		if(data is "JsonError"){
-			ThrowAbortException("CockHandler::loadTemplates() "..JsonError(data).what);
+			ThrowAbortException("CockHandler::loadTemplates() " .. JsonError(data).what);
             return;
 		}
 		
         let rootElement = JSONObject(data);
         foreach(key, elem : rootElement.data) {
+            if(key == "include") {
+                // Handle includes
+                if(elem is 'JsonArray') {
+                    foreach(includeElem : JsonArray(elem).arr) {
+                        if(includeElem is 'JsonString') {
+                            String includePath = JsonString(includeElem).s;
+                            loadTemplates(includePath, haltOnError);
+                        } else {
+                            Console.Printf("\c[RED]CockHandler::loadTemplates() Invalid include format for %s in [%s]", key, filename);
+                        }
+                    }
+                } else {
+                    Console.Printf("\c[RED]CockHandler::loadTemplates() 'include' must be an array of strings");
+                }
+                continue;
+            }
+
             UIView template = UIView.deserialize(JsonObject(elem));
             if(!template) {
                 Console.Printf("\c[RED]CockHandler::loadTemplates() Failed to deserialize template %s", key);
