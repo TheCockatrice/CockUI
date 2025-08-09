@@ -58,21 +58,30 @@ extend class UIView {
             backgroundColor = parseColor(bgColor);
         }
 
+        
+        // Check width and height for pin objects
         // Attempt to get shortcuts for auto-minimum sizes
         string tempStr;
-        if(getOptionalString(obj, "width", tempStr)) {
+        JSONObject j_widthPin = JsonObject(obj.get("width"));
+        JSONObject j_heightPin = JsonObject(obj.get("height"));
+
+        if(j_widthPin) {
+            widthPin = UIPin.deserialize(j_widthPin);
+        } else if(getOptionalString(obj, "width", tempStr)) {
             if(tempStr ~== "min") {
                 if(widthPin) widthPin.value = UIView.Size_Min;
                 else pinWidth(UIView.Size_Min);
             }
         }
 
-        if(getOptionalString(obj, "height", tempStr)) {
+        if(j_heightPin) {
+            heightPin = UIPin.deserialize(j_heightPin);
+        } else if(getOptionalString(obj, "height", tempStr)) {
             if(tempStr ~== "min") {
                 if(heightPin) heightPin.value = UIView.Size_Min;
                 else pinHeight(UIView.Size_Min);
             }
-        }        
+        }
 
         // Get a quick pinToParent
         let j_pp = JsonArray(obj.get("pinToParent"));
@@ -182,6 +191,8 @@ extend class UIView {
         else if(alignString ~== "Right") return Align_Right;
         else if(alignString ~== "Top") return Align_Top;
         else if(alignString ~== "Bottom") return Align_Bottom;
+        else if(alignString ~== "CenterRight") return Align_Right | Align_VCenter;
+        else if(alignString ~== "CenterLeft") return Align_Left | Align_VCenter;
         else if(alignString ~== "VCenter" || alignString ~== "Middle") return Align_VCenter;
         else if(alignString ~== "HCenter" || alignString ~== "Center") return Align_HCenter;
         else if(alignString ~== "Centered") return Align_Centered;
