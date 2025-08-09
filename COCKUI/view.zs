@@ -148,6 +148,13 @@ class UIView ui {
         return self;
     }
 
+    virtual UIView clone() {
+        UIView newView = UIView(new(getClass()));
+        newView.baseInit();
+        newView.applyTemplate(self);
+        return newView;
+    }
+
     // Minimum initialization, used to prepare the view for deserialization
     virtual UIView baseInit() {
         alpha = 1;
