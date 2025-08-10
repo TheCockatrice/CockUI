@@ -90,7 +90,7 @@ class UIHorizontalLayout : UIViewManager {
                 //if(developer > 1) managed.backgroundColor = Color(255, random(0, 255), random(127, 255), random(0, 255));
             }
         } else if(layoutMode == Content_SizeParent) {
-            // Briefly fudge our height so auto sizing views work
+            // Briefly fudge our width so auto sizing views work
             double oldWidth = frame.size.x;
             frame.size.x = 8888888;
 
@@ -113,7 +113,7 @@ class UIHorizontalLayout : UIViewManager {
         frame.size.y += padding.top + padding.bottom;
 
         // After laying out managed views we will rearrange them inside our container in order, adding spacing
-        // One can only hope none of the subviews actually used horizontal pinning for sizing, otherwise the subviews could be the full height of this container at the time of layout
+        // One can only hope none of the subviews actually used horizontal pinning for sizing, otherwise the subviews could be the full width of this container at the time of layout
         double xpos = arrangeManagedViews();
         if(layoutMode == Content_SizeParent) {
             sizeToFitContents(xpos);

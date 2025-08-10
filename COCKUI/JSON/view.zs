@@ -286,8 +286,11 @@ extend class UIPin {
         getOptionalBool(obj, "isFactor", isFactor);
         string valueString;
         if(getOptionalString(obj, "value", valueString)) {
+            // Shortcut, no need to set other values except maybe Offset
             if(valueString ~== "min") {
                 value = UIView.Size_Min;
+                anchor = Pin_Left;
+                isFactor = false;
             }
         } else getOptionalDouble(obj, "value", value);
         getOptionalDouble(obj, "offset", offset);
@@ -303,7 +306,7 @@ extend class UIPin {
                 parentAnchor = anchor;
             }
         } else {
-            anchor = UIPin.Pin_Static;
+            if(value != UIView.Size_Min) anchor = UIPin.Pin_Static;
             parentAnchor = UIPin.Pin_Static;
         }
 

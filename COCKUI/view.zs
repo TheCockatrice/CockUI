@@ -275,7 +275,7 @@ class UIView ui {
     // Get absolute height defined by pins or frame
     // Returns -1 if height is flexible as defined by pins
     double getLayoutHeightAbsolute() {
-        if(heightPin && !heightPin.isFactor) {
+        if(heightPin && !heightPin.isFactor && heightPin.value != UIView.Size_Min) {
             return heightPin.value + heightPin.offset;
         } else if(!heightPin) {
             return frame.size.y;
@@ -295,7 +295,11 @@ class UIView ui {
     // Get absolute width defined by pins or frame
     // Returns -1 if width is flexible as defined by pins
     double getLayoutWidthAbsolute() {
-        if(widthPin && !widthPin.isFactor) {
+                    /*if(widthPin.value == UIView.Size_Min) {
+                let minSize = calcMinSize((999999, 999999));
+                return minSize.x + widthPin.offset;
+            }*/
+        if(widthPin && !widthPin.isFactor && widthPin.value != UIView.Size_Min) {
             return widthPin.value + widthPin.offset;
         } else if(!widthPin) {
             return frame.size.x;
@@ -437,7 +441,7 @@ class UIView ui {
         return minSize;     // Default just returns minSize, override on specific views for more functionality
     }
 
-    double calcPinnedWidth(Vector2 parentSize) {
+    virtual double calcPinnedWidth(Vector2 parentSize) {
         double width = invalid;
 
         if(widthPin) {
