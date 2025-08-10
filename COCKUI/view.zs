@@ -295,13 +295,9 @@ class UIView ui {
     // Get absolute width defined by pins or frame
     // Returns -1 if width is flexible as defined by pins
     double getLayoutWidthAbsolute() {
-                    /*if(widthPin.value == UIView.Size_Min) {
-                let minSize = calcMinSize((999999, 999999));
-                return minSize.x + widthPin.offset;
-            }*/
         if(widthPin && !widthPin.isFactor && widthPin.value != UIView.Size_Min) {
             return widthPin.value + widthPin.offset;
-        } else if(!widthPin) {
+        } else if(!widthPin || widthPin.value == UIView.Size_Min) {
             return frame.size.x;
         }
         return -1;
