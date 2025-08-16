@@ -115,6 +115,15 @@ class UIMath {
         return num < 0.5 ? 4.0 * num * num * num : 1.0 - powf(-2 * num + 2.0, 3) / 2.0;
     }
 
+    static float EaseToAndBack(float num, float mid = 0.5) {
+        if(num < mid) {
+            return (num / mid) * (num / mid);
+        } else {
+            float n = (num - mid) / (1.0 - mid);
+            return 1.0 - (n * n);
+        }
+    }
+
     // Ease out values between x and y by a
     static float EaseOutXYA(float x, float y, float a) {
         float na = EaseOutCubicf(a);
