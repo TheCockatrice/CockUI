@@ -316,15 +316,27 @@ class UIButton : UIControl {
             shapeTransform.Translate((floor(b.pos.x), floor(b.pos.y)));
             drawShape.SetTransform(shapeTransform);
             
-            Screen.drawShape(
-                bstate.tex.texID, 
-                true,
-                drawShape,
-                DTA_Alpha, cAlpha,
-                DTA_Filtering, !noFilter,
-                DTA_ColorOverlay, blendColor,
-                DTA_Desaturate, int(255.0 * desaturation)
-            );
+            if(drawCanvas) {
+                drawCanvas.drawShape(
+                    bstate.tex.texID, 
+                    true,
+                    drawShape,
+                    DTA_Alpha, cAlpha,
+                    DTA_Filtering, !noFilter,
+                    DTA_ColorOverlay, blendColor,
+                    DTA_Desaturate, int(255.0 * desaturation)
+                );
+            } else {
+                Screen.drawShape(
+                    bstate.tex.texID, 
+                    true,
+                    drawShape,
+                    DTA_Alpha, cAlpha,
+                    DTA_Filtering, !noFilter,
+                    DTA_ColorOverlay, blendColor,
+                    DTA_Desaturate, int(255.0 * desaturation)
+                );
+            }
             
         } else if(bstate && bstate.tex) {
             // Draw texture
@@ -401,37 +413,70 @@ class UIButton : UIControl {
 
             // Draw texture
             if(angle == 0) {
-                Screen.DrawTexture(
-                    tex.texID, 
-                    true, 
-                    floor(pos.x),
-                    floor(pos.y),
-                    DTA_DestWidthF, size.x,
-                    DTA_DestHeightF, size.y,
-                    DTA_Alpha, cAlpha,
-                    DTA_ColorOverlay, blendColor,
-                    DTA_Filtering, !noFilter,
-                    DTA_Desaturate, int(255.0 * desaturation)
-                );
+                if(drawCanvas) {
+                    drawCanvas.DrawTexture(
+                        tex.texID, 
+                        true, 
+                        floor(pos.x),
+                        floor(pos.y),
+                        DTA_DestWidthF, size.x,
+                        DTA_DestHeightF, size.y,
+                        DTA_Alpha, cAlpha,
+                        DTA_ColorOverlay, blendColor,
+                        DTA_Filtering, !noFilter,
+                        DTA_Desaturate, int(255.0 * desaturation)
+                    );
+                } else {
+                    Screen.DrawTexture(
+                        tex.texID, 
+                        true, 
+                        floor(pos.x),
+                        floor(pos.y),
+                        DTA_DestWidthF, size.x,
+                        DTA_DestHeightF, size.y,
+                        DTA_Alpha, cAlpha,
+                        DTA_ColorOverlay, blendColor,
+                        DTA_Filtering, !noFilter,
+                        DTA_Desaturate, int(255.0 * desaturation)
+                    );
+                }
             } else {
                 Vector2 texsize = TexMan.GetScaledSize(tex.texID);
                 Vector2 cpos = (rotCenter.x * texSize.x, rotCenter.y * texSize.y);
 
-                Screen.DrawTexture(
-                    tex.texID, 
-                    true, 
-                    floor(pos.x) + (rotCenter.x * size.x),
-                    floor(pos.y) + (rotCenter.y * size.y),
-                    DTA_DestWidthF, size.x,
-                    DTA_DestHeightF, size.y,
-                    DTA_Alpha, cAlpha,
-                    DTA_ColorOverlay, blendColor,
-                    DTA_Filtering, !noFilter,
-                    DTA_Desaturate, int(255.0 * desaturation),
-                    DTA_Rotate, angle,
-                    DTA_LeftOffsetF, cPos.x,
-                    DTA_TopOffsetF, cPos.y
-                );
+                if(drawCanvas) {
+                    drawCanvas.DrawTexture(
+                        tex.texID, 
+                        true, 
+                        floor(pos.x) + (rotCenter.x * size.x),
+                        floor(pos.y) + (rotCenter.y * size.y),
+                        DTA_DestWidthF, size.x,
+                        DTA_DestHeightF, size.y,
+                        DTA_Alpha, cAlpha,
+                        DTA_ColorOverlay, blendColor,
+                        DTA_Filtering, !noFilter,
+                        DTA_Desaturate, int(255.0 * desaturation),
+                        DTA_Rotate, angle,
+                        DTA_LeftOffsetF, cPos.x,
+                        DTA_TopOffsetF, cPos.y
+                    );
+                } else {
+                    Screen.DrawTexture(
+                        tex.texID, 
+                        true, 
+                        floor(pos.x) + (rotCenter.x * size.x),
+                        floor(pos.y) + (rotCenter.y * size.y),
+                        DTA_DestWidthF, size.x,
+                        DTA_DestHeightF, size.y,
+                        DTA_Alpha, cAlpha,
+                        DTA_ColorOverlay, blendColor,
+                        DTA_Filtering, !noFilter,
+                        DTA_Desaturate, int(255.0 * desaturation),
+                        DTA_Rotate, angle,
+                        DTA_LeftOffsetF, cPos.x,
+                        DTA_TopOffsetF, cPos.y
+                    );
+                }
             }
             
         }

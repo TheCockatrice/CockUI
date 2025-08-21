@@ -126,7 +126,7 @@ class UIView ui {
     Array<UIPin> pins;
     UIPin widthPin, heightPin;
     Vector2 minSize, maxSize;               // Used only when calculating pins or automatic sizing
-
+    Canvas drawCanvas;
 
     const invalid = double(9999999);
 
@@ -236,6 +236,13 @@ class UIView ui {
         return String.Format("%s  Pos: (x: %.2f, y: %.2f)  Size: (%.2f x %.2f)", getClassName(), frame.pos.x, frame.pos.y, frame.size.x, frame.size.y);
     }
 
+    void setCanvas(Canvas c) {
+        drawCanvas = c;
+        foreach(v : subviews) {
+            v.setCanvas(c);
+        }
+    }
+
     UIPin pin(int anchor = 0, int parentAnchor = -1, double value = 0, double offset = 0, bool isFactor = false, int priority = 0) {
         if(parentAnchor == -1) { parentAnchor = anchor; }
         
@@ -342,7 +349,7 @@ class UIView ui {
         layoutIfNecessary();
 
         if(ignoresClipping) {
-            Screen.ClearClipRect();
+            clearClip();
         }
 
         if(backgroundColor != 0) {
@@ -369,13 +376,13 @@ class UIView ui {
                 }
             }
 
-            if(!ignoresClipping) Screen.setClipRect(int(clipRect.pos.x), int(clipRect.pos.y), int(clipRect.size.x), int(clipRect.size.y));
+            if(!ignoresClipping) setClip(int(clipRect.pos.x), int(clipRect.pos.y), int(clipRect.size.x), int(clipRect.size.y));
 
             if(sv.drawSubviewsFirst) {
                 sv.drawSubviews();
 
                 // Reset clip rect because subviews probably changed it
-                if(!ignoresClipping) Screen.setClipRect(int(clipRect.pos.x), int(clipRect.pos.y), int(clipRect.size.x), int(clipRect.size.y));
+                if(!ignoresClipping) setClip(int(clipRect.pos.x), int(clipRect.pos.y), int(clipRect.size.x), int(clipRect.size.y));
                 
                 sv.draw();
             } else {
@@ -410,7 +417,7 @@ class UIView ui {
     }
 
     bool isOnScreen() {
-        Vector2 screen = (Screen.GetWidth(), Screen.GetHeight());
+        Vector2 screen = screenSize();
         Vector2 pos = relToScreen((0,0));
 		Vector2 size = (frame.size.x * cScale.x, frame.size.y * cScale.y);
 
@@ -823,6 +830,7 @@ class UIView ui {
         subviews.push(v);
 
         v.parent = self;
+        if(drawCanvas) v.setCanvas(drawCanvas);
 
         v.onAddedToParent(self);
     }
@@ -865,7 +873,9 @@ class UIView ui {
         v.onRemoved(self);
     }
 
-    virtual void onRemoved(UIView oldSuperview) { }
+    virtual void onRemoved(UIView oldSuperview) { 
+        drawCanvas = null;
+    }
 
     int numSubviews() {
         return subviews.size();
@@ -1001,10 +1011,31 @@ class UIView ui {
 		ret.size = (frame.size.x * cScale.x, frame.size.y * cScale.y);
 	}
 
+    Vector2 screenSize() {
+        // TODO: Add an engine call for canvas size
+        if(drawCanvas) {
+            double x, y, w, h;
+            [x, y, w, h] = drawCanvas.GetFullscreenRect(1.0, 1.0, FSMode_ScaleToScreen);
+            return (round(w), round(h));
+        }
+        else return (Screen.GetWidth(), Screen.GetHeight());
+    }
+
     virtual void clipToScreen(out UIBox ret) {
 		ret.pos = relToScreen((0,0));
 		ret.size = (frame.size.x * cScale.x, frame.size.y * cScale.y);
 	}
+
+    virtual void clearClip() {
+        if(drawCanvas) drawCanvas.ClearClipRect();
+        else Screen.ClearClipRect();
+    }
+
+    virtual void setClip(int x, int y, int w, int h) {
+        if(drawCanvas) drawCanvas.SetClipRect(x, y, w, h);
+        else Screen.SetClipRect(x, y, w, h);
+    }
+
 
     virtual void getScreenClip(out UIBox ret) {
         UIBox b;
@@ -1107,9 +1138,14 @@ class UIView ui {
             sx = int(tempRect.size.x) + cx;
             sy = int(tempRect.size.y) + cy;
         } else {
-            [cx, cy, sx, sy] = Screen.GetClipRect();
-            sx = sx == -1 ? Screen.GetWidth() : sx + cx;
-            sy = sy == -1 ? Screen.GetHeight() : sx + cy;
+            if(drawCanvas) {
+                [cx, cy, sx, sy] = drawCanvas.GetClipRect();
+                sx = sx == -1 ? 999999 : sx + cx;
+                sy = sy == -1 ? 999999 : sx + cy;
+            } else {
+                sx = sx == -1 ? Screen.GetWidth() : sx + cx;
+                sy = sy == -1 ? Screen.GetHeight() : sx + cy;
+            }
         }
 
         // Trim draw rect
@@ -1119,7 +1155,8 @@ class UIView ui {
         sy = MAX(0, MIN(sy, int(startPos.y + size.y)));
 
         // Draw
-		Screen.dim(col, a * cAlpha * (col.a / 256.0), cx, cy, sx - cx, sy - cy);
+        if(drawCanvas) drawCanvas.dim(col, a * cAlpha * (col.a / 256.0), cx, cy, sx - cx, sy - cy);
+        else Screen.dim(col, a * cAlpha * (col.a / 256.0), cx, cy, sx - cx, sy - cy);
     }
 
     void clip(double left, double top, double width, double height, int flags = 0) {
@@ -1133,11 +1170,11 @@ class UIView ui {
         let pos = relToScreen((left, top));
         int x = int(pos.x);
         int y = int(pos.y);
-        Screen.SetClipRect(
-            x, 
-            y, 
-            int(pos.x + (width * cScale.x) - x), 
-            int(pos.y + (height * cScale.y) - y)
+        setClip(
+            pos.x, 
+            pos.y,
+            width * cScale.x, 
+            height * cScale.y
         );
     }
 

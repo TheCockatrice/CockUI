@@ -32,6 +32,7 @@ class UIImage : UIView {
     ImageStyle imgStyle;
     ImageAnchor imgAnchor;
     Vector2 imgScale;
+    ERenderStyle renderStyle;
     double rotation;
     bool noFilter, flipX, flipY, requiresRebuild;
     
@@ -42,6 +43,7 @@ class UIImage : UIView {
         self.imgStyle = imgStyle;
         self.imgScale = imgScale;
         self.imgAnchor = imgAnchor;
+        renderStyle = STYLE_Translucent;
 
         Super.init(pos, size);
         raycastTarget = false;
@@ -55,6 +57,7 @@ class UIImage : UIView {
         self.imgStyle = imgStyle;
         self.imgScale = imgScale;
         self.imgAnchor = imgAnchor;
+        renderStyle = STYLE_Translucent;
 
         Super.init(pos, size);
         raycastTarget = false;
@@ -69,6 +72,7 @@ class UIImage : UIView {
         imgStyle = Image_Scale;
         imgScale = (1,1);
         imgAnchor = ImageAnchor_Middle;
+        renderStyle = STYLE_Translucent;
 
         return self;
     }
@@ -352,28 +356,56 @@ class UIImage : UIView {
             shapeTransform.Clear();
             shapeTransform.Translate((floor(b.pos.x), floor(b.pos.y)));
             drawShape.SetTransform(shapeTransform);
-            Screen.drawShape(
-                slices.texture.texID, 
-                true,
-                drawShape,
-                DTA_Alpha, cAlpha,
-                DTA_Filtering, !noFilter,
-                DTA_ColorOverlay, blendColor,
-                DTA_Desaturate, int(255.0 * desaturation)
-            );
+
+            if(drawCanvas) {
+                drawCanvas.drawShape(
+                    slices.texture.texID, 
+                    true,
+                    drawShape,
+                    DTA_Alpha, cAlpha,
+                    DTA_Filtering, !noFilter,
+                    DTA_ColorOverlay, blendColor,
+                    DTA_Desaturate, int(255.0 * desaturation),
+                    DTA_LegacyRenderStyle, renderStyle
+                );
+            } else {
+                Screen.drawShape(
+                    slices.texture.texID, 
+                    true,
+                    drawShape,
+                    DTA_Alpha, cAlpha,
+                    DTA_Filtering, !noFilter,
+                    DTA_ColorOverlay, blendColor,
+                    DTA_Desaturate, int(255.0 * desaturation),
+                    DTA_LegacyRenderStyle, renderStyle
+                );
+            }
         } else if(imgStyle == Image_Repeat) {
             if(requiresRebuild) buildShape();
             shapeTransform.Clear();
             shapeTransform.Translate((floor(b.pos.x), floor(b.pos.y)));
             drawShape.SetTransform(shapeTransform);
-            Screen.drawShape(
-                tex.texID,
-                true,
-                drawShape,
-                DTA_Alpha, cAlpha,
-                DTA_Filtering, !noFilter,
-                DTA_Desaturate, int(255.0 * desaturation)
-            );
+            if(drawCanvas) {
+                drawCanvas.drawShape(
+                    tex.texID,
+                    true,
+                    drawShape,
+                    DTA_Alpha, cAlpha,
+                    DTA_Filtering, !noFilter,
+                    DTA_Desaturate, int(255.0 * desaturation),
+                    DTA_LegacyRenderStyle, renderStyle
+                );
+            } else {
+                Screen.drawShape(
+                    tex.texID,
+                    true,
+                    drawShape,
+                    DTA_Alpha, cAlpha,
+                    DTA_Filtering, !noFilter,
+                    DTA_Desaturate, int(255.0 * desaturation),
+                    DTA_LegacyRenderStyle, renderStyle
+                );
+            }
         } else if(tex) {
             Vector2 pos, size;
             [pos, size] = getImgPos(b);
@@ -385,7 +417,7 @@ class UIImage : UIView {
             if(imgStyle == Image_Aspect_Fill || imgStyle == Image_Absolute || imgStyle == Image_Aspect_Fit || imgStyle == Image_Aspect_Scale) {
                 UIBox clipRect;
                 getScreenClip(clipRect);
-                Screen.setClipRect(int(clipRect.pos.x), int(clipRect.pos.y), int(clipRect.size.x), int(clipRect.size.y));
+                setClip(int(clipRect.pos.x), int(clipRect.pos.y), int(clipRect.size.x), int(clipRect.size.y));
             }
 
             if(pixelAlign) {
@@ -395,45 +427,90 @@ class UIImage : UIView {
 
             // Draw texture
             if(angle == 0) {
-                Screen.DrawTexture(
-                    tex.texID, 
-                    true, 
-                    pos.x,
-                    pos.y,
-                    DTA_DestWidthF, size.x,
-                    DTA_DestHeightF, size.y,
-                    DTA_Alpha, cAlpha,
-                    DTA_ColorOverlay, blendColor,
-                    DTA_Filtering, !noFilter,
-                    DTA_Desaturate, int(255.0 * desaturation),
-                    DTA_Rotate, rotation,
-                    DTA_CenterOffset, rotation != 0,
-                    DTA_FlipX, flipX,
-                    DTA_FlipY, flipY
-                );
+                if(drawCanvas) {
+                    drawCanvas.DrawTexture(
+                        tex.texID, 
+                        true, 
+                        pos.x,
+                        pos.y,
+                        DTA_DestWidthF, size.x,
+                        DTA_DestHeightF, size.y,
+                        DTA_Alpha, cAlpha,
+                        DTA_ColorOverlay, blendColor,
+                        DTA_Filtering, !noFilter,
+                        DTA_Desaturate, int(255.0 * desaturation),
+                        DTA_Rotate, rotation,
+                        DTA_CenterOffset, rotation != 0,
+                        DTA_FlipX, flipX,
+                        DTA_FlipY, flipY,
+                        DTA_LegacyRenderStyle, renderStyle
+                    );
+                } else {
+                    Screen.DrawTexture(
+                        tex.texID, 
+                        true, 
+                        pos.x,
+                        pos.y,
+                        DTA_DestWidthF, size.x,
+                        DTA_DestHeightF, size.y,
+                        DTA_Alpha, cAlpha,
+                        DTA_ColorOverlay, blendColor,
+                        DTA_Filtering, !noFilter,
+                        DTA_Desaturate, int(255.0 * desaturation),
+                        DTA_Rotate, rotation,
+                        DTA_CenterOffset, rotation != 0,
+                        DTA_FlipX, flipX,
+                        DTA_FlipY, flipY,
+                        DTA_LegacyRenderStyle, renderStyle
+                    );
+                }
             } else {
                 Vector2 texsize = TexMan.GetScaledSize(tex.texID);
                 Vector2 cpos = (rotCenter.x * texSize.x, rotCenter.y * texSize.y);
 
-                Screen.DrawTexture(
-                    tex.texID, 
-                    true, 
-                    pos.x + (rotCenter.x * size.x),
-                    pos.y + (rotCenter.x * size.x),
-                    DTA_DestWidthF, size.x,
-                    DTA_DestHeightF, size.y,
-                    DTA_Alpha, cAlpha,
-                    DTA_ColorOverlay, blendColor,
-                    DTA_Filtering, !noFilter,
-                    DTA_Desaturate, int(255.0 * desaturation),
-                    DTA_Rotate, rotation,
-                    DTA_CenterOffset, rotation != 0,
-                    DTA_FlipX, flipX,
-                    DTA_FlipY, flipY,
-                    DTA_Rotate, angle,
-                    DTA_LeftOffsetF, cPos.x,
-                    DTA_TopOffsetF, cPos.y
-                );
+                if(drawCanvas) {
+                    drawCanvas.DrawTexture(
+                        tex.texID, 
+                        true, 
+                        pos.x + (rotCenter.x * size.x),
+                        pos.y + (rotCenter.x * size.x),
+                        DTA_DestWidthF, size.x,
+                        DTA_DestHeightF, size.y,
+                        DTA_Alpha, cAlpha,
+                        DTA_ColorOverlay, blendColor,
+                        DTA_Filtering, !noFilter,
+                        DTA_Desaturate, int(255.0 * desaturation),
+                        DTA_Rotate, rotation,
+                        DTA_CenterOffset, rotation != 0,
+                        DTA_FlipX, flipX,
+                        DTA_FlipY, flipY,
+                        DTA_Rotate, angle,
+                        DTA_LeftOffsetF, cPos.x,
+                        DTA_TopOffsetF, cPos.y,
+                        DTA_LegacyRenderStyle, renderStyle
+                    );
+                } else {
+                    Screen.DrawTexture(
+                        tex.texID, 
+                        true, 
+                        pos.x + (rotCenter.x * size.x),
+                        pos.y + (rotCenter.x * size.x),
+                        DTA_DestWidthF, size.x,
+                        DTA_DestHeightF, size.y,
+                        DTA_Alpha, cAlpha,
+                        DTA_ColorOverlay, blendColor,
+                        DTA_Filtering, !noFilter,
+                        DTA_Desaturate, int(255.0 * desaturation),
+                        DTA_Rotate, rotation,
+                        DTA_CenterOffset, rotation != 0,
+                        DTA_FlipX, flipX,
+                        DTA_FlipY, flipY,
+                        DTA_Rotate, angle,
+                        DTA_LeftOffsetF, cPos.x,
+                        DTA_TopOffsetF, cPos.y,
+                        DTA_LegacyRenderStyle, renderStyle
+                    );
+                }
             }
         }
     }

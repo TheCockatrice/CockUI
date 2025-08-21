@@ -35,6 +35,12 @@ class UITexture {
 	ui bool makeReady() {
 		return TexMan.MakeReady(texID);
 	}
+
+	ui void unload() {
+		if(texID.isValid()) {
+			TexMan.UnloadTexture(texID);
+		}
+	}
 }
 
 struct UISTexture {
@@ -72,6 +78,12 @@ struct UISTexture {
 
 	ui bool makeReady() {
 		return TexMan.MakeReady(texID);
+	}
+
+	ui void unload() {
+		if(texID.isValid()) {
+			TexMan.UnloadTexture(texID);
+		}
 	}
 }
 

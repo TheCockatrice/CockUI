@@ -270,12 +270,12 @@ class UILabel : UIView {
         if(clipText) {
             UIBox clipRect;
             getScreenClip(clipRect);
-            Screen.setClipRect(int(clipRect.pos.x), int(clipRect.pos.y), int(clipRect.size.x), int(clipRect.size.y));
+            setClip(int(clipRect.pos.x), int(clipRect.pos.y), int(clipRect.size.x), int(clipRect.size.y));
         }
 
-        
+        Vector2 screenSize = screenSize();
         Vector2 fScale = (cScale.x * fontScale.x * cacheAutoScale, cScale.y * fontScale.y * cacheAutoScale);
-        Vector2 vSize = (double(Screen.getWidth()) / fScale.x, double(Screen.getHeight()) / fScale.y);
+        Vector2 vSize = (screenSize.x / fScale.x, screenSize.y / fScale.y);
         int desat = int(255.0 * desaturation);
         int charWidth = fnt.GetCharWidth("0");
         int spaceWidth = fnt.GetCharWidth(" ");
@@ -301,18 +301,33 @@ class UILabel : UIView {
                     }
 
                     // Draw the cursor character
-                    Screen.DrawText(fnt, fullColor ? Font.CR_WHITE : textColor, pos.x, pos.y, getCursor(),
-                        DTA_VirtualWidthF, vSize.x, DTA_VirtualHeightF, vSize.y,
-                        DTA_KeepRatio, true,
-                        DTA_Alpha, cAlpha,
-                        DTA_Color, fullColor ? textColor : 0xFFFFFFFF,
-                        DTA_Filtering, !noFilter,
-                        DTA_FillColor, stencilColor ? Color(0, stencilColor.r, stencilColor.g, stencilColor.b) : ~0u,
-                        DTA_Desaturate, desat,
-                        DTA_ColorOverlay, blendColor,
-                        DTA_Monospace, monospace ? MONO_CellCenter : 0,
-                        DTA_Spacing, monospace ? charWidth : 0
-                    );
+                    if(drawCanvas) {
+                        drawCanvas.DrawText(fnt, fullColor ? Font.CR_WHITE : textColor, pos.x, pos.y, getCursor(),
+                            DTA_VirtualWidthF, vSize.x, DTA_VirtualHeightF, vSize.y,
+                            DTA_KeepRatio, true,
+                            DTA_Alpha, cAlpha,
+                            DTA_Color, fullColor ? textColor : 0xFFFFFFFF,
+                            DTA_Filtering, !noFilter,
+                            DTA_FillColor, stencilColor ? Color(0, stencilColor.r, stencilColor.g, stencilColor.b) : ~0u,
+                            DTA_Desaturate, desat,
+                            DTA_ColorOverlay, blendColor,
+                            DTA_Monospace, monospace ? MONO_CellCenter : 0,
+                            DTA_Spacing, monospace ? charWidth : 0
+                        );
+                    } else {
+                        Screen.DrawText(fnt, fullColor ? Font.CR_WHITE : textColor, pos.x, pos.y, getCursor(),
+                            DTA_VirtualWidthF, vSize.x, DTA_VirtualHeightF, vSize.y,
+                            DTA_KeepRatio, true,
+                            DTA_Alpha, cAlpha,
+                            DTA_Color, fullColor ? textColor : 0xFFFFFFFF,
+                            DTA_Filtering, !noFilter,
+                            DTA_FillColor, stencilColor ? Color(0, stencilColor.r, stencilColor.g, stencilColor.b) : ~0u,
+                            DTA_Desaturate, desat,
+                            DTA_ColorOverlay, blendColor,
+                            DTA_Monospace, monospace ? MONO_CellCenter : 0,
+                            DTA_Spacing, monospace ? charWidth : 0
+                        );
+                    }
                 }
             } else {
                 int charCounter = charLimit < 0 ? 9999999 : charLimit;
@@ -345,23 +360,40 @@ class UILabel : UIView {
                             spos.x = floor(spos.x); 
                             spos.y = floor(spos.y);
                         }
-
-                        Screen.DrawText(fnt, Font.CR_UNTRANSLATED, spos.x, spos.y, line,
-                            DTA_VirtualWidthF, vSize.x, DTA_VirtualHeightF, vSize.y,
-                            DTA_KeepRatio, true,
-                            DTA_Alpha, (255.0 / shadowColor.a) * cAlpha,
-                            DTA_Color, shadowStencil ? 0xFFFFFFFF : shadowColor,
-                            DTA_TextLen, charCounter,
-                            DTA_Filtering, !noFilter,
-                            DTA_FillColor, shadowStencil ? Color(0, shadowColor.r, shadowColor.g, shadowColor.b) : ~0u,
-                            DTA_Desaturate, desat,
-                            DTA_ColorOverlay, blendColor,
-                            DTA_Monospace, monospace ? MONO_CellCenter : 0,
-                            DTA_Spacing, monospace ? charWidth : 0
-                        );
+                        
+                        if(drawCanvas) {
+                            drawCanvas.DrawText(fnt, Font.CR_UNTRANSLATED, spos.x, spos.y, line,
+                                DTA_VirtualWidthF, vSize.x, DTA_VirtualHeightF, vSize.y,
+                                DTA_KeepRatio, true,
+                                DTA_Alpha, (255.0 / shadowColor.a) * cAlpha,
+                                DTA_Color, shadowStencil ? 0xFFFFFFFF : shadowColor,
+                                DTA_TextLen, charCounter,
+                                DTA_Filtering, !noFilter,
+                                DTA_FillColor, shadowStencil ? Color(0, shadowColor.r, shadowColor.g, shadowColor.b) : ~0u,
+                                DTA_Desaturate, desat,
+                                DTA_ColorOverlay, blendColor,
+                                DTA_Monospace, monospace ? MONO_CellCenter : 0,
+                                DTA_Spacing, monospace ? charWidth : 0
+                            );
+                        } else {
+                            Screen.DrawText(fnt, Font.CR_UNTRANSLATED, spos.x, spos.y, line,
+                                DTA_VirtualWidthF, vSize.x, DTA_VirtualHeightF, vSize.y,
+                                DTA_KeepRatio, true,
+                                DTA_Alpha, (255.0 / shadowColor.a) * cAlpha,
+                                DTA_Color, shadowStencil ? 0xFFFFFFFF : shadowColor,
+                                DTA_TextLen, charCounter,
+                                DTA_Filtering, !noFilter,
+                                DTA_FillColor, shadowStencil ? Color(0, shadowColor.r, shadowColor.g, shadowColor.b) : ~0u,
+                                DTA_Desaturate, desat,
+                                DTA_ColorOverlay, blendColor,
+                                DTA_Monospace, monospace ? MONO_CellCenter : 0,
+                                DTA_Spacing, monospace ? charWidth : 0
+                            );
+                        }
                     }
 
-                    Screen.DrawText(fnt, fullColor ? Font.CR_WHITE : textColor, pos.x, pos.y, line,
+                    if(drawCanvas) {
+                        drawCanvas.DrawText(fnt, fullColor ? Font.CR_WHITE : textColor, pos.x, pos.y, line,
                             DTA_VirtualWidthF, vSize.x, DTA_VirtualHeightF, vSize.y,
                             DTA_KeepRatio, true,
                             DTA_Alpha, cAlpha,
@@ -373,7 +405,22 @@ class UILabel : UIView {
                             DTA_ColorOverlay, blendColor,
                             DTA_Monospace, monospace ? MONO_CellCenter : 0,
                             DTA_Spacing, monospace ? charWidth : 0
-                    );
+                        );
+                    } else {
+                        Screen.DrawText(fnt, fullColor ? Font.CR_WHITE : textColor, pos.x, pos.y, line,
+                            DTA_VirtualWidthF, vSize.x, DTA_VirtualHeightF, vSize.y,
+                            DTA_KeepRatio, true,
+                            DTA_Alpha, cAlpha,
+                            DTA_Color, fullColor ? textColor : 0xFFFFFFFF,
+                            DTA_TextLen, charCounter,
+                            DTA_Filtering, !noFilter,
+                            DTA_FillColor, stencilColor ? Color(0, stencilColor.r, stencilColor.g, stencilColor.b) : ~0u,
+                            DTA_Desaturate, desat,
+                            DTA_ColorOverlay, blendColor,
+                            DTA_Monospace, monospace ? MONO_CellCenter : 0,
+                            DTA_Spacing, monospace ? charWidth : 0
+                        );
+                    }
 
                     // Draw the cursor
                     if(drawCursor && x == cursorY) {
@@ -392,19 +439,35 @@ class UILabel : UIView {
                                 }
 
                                 // Draw the cursor character
-                                Screen.DrawText(fnt, fullColor ? Font.CR_WHITE : textColor, pos.x, pos.y, cursorString,
-                                    DTA_VirtualWidthF, vSize.x, DTA_VirtualHeightF, vSize.y,
-                                    DTA_KeepRatio, true,
-                                    DTA_Alpha, cAlpha,
-                                    DTA_Color, fullColor ? textColor : 0xFFFFFFFF,
-                                    DTA_TextLen, charCounter,
-                                    DTA_Filtering, !noFilter,
-                                    DTA_FillColor, stencilColor ? Color(0, stencilColor.r, stencilColor.g, stencilColor.b) : ~0u,
-                                    DTA_Desaturate, desat,
-                                    DTA_ColorOverlay, blendColor,
-                                    DTA_Monospace, monospace ? MONO_CellCenter : 0,
-                                    DTA_Spacing, monospace ? charWidth : 0
-                                );
+                                if(drawCanvas) {
+                                    drawCanvas.DrawText(fnt, fullColor ? Font.CR_WHITE : textColor, pos.x, pos.y, cursorString,
+                                        DTA_VirtualWidthF, vSize.x, DTA_VirtualHeightF, vSize.y,
+                                        DTA_KeepRatio, true,
+                                        DTA_Alpha, cAlpha,
+                                        DTA_Color, fullColor ? textColor : 0xFFFFFFFF,
+                                        DTA_TextLen, charCounter,
+                                        DTA_Filtering, !noFilter,
+                                        DTA_FillColor, stencilColor ? Color(0, stencilColor.r, stencilColor.g, stencilColor.b) : ~0u,
+                                        DTA_Desaturate, desat,
+                                        DTA_ColorOverlay, blendColor,
+                                        DTA_Monospace, monospace ? MONO_CellCenter : 0,
+                                        DTA_Spacing, monospace ? charWidth : 0
+                                    );
+                                } else {
+                                    Screen.DrawText(fnt, fullColor ? Font.CR_WHITE : textColor, pos.x, pos.y, cursorString,
+                                        DTA_VirtualWidthF, vSize.x, DTA_VirtualHeightF, vSize.y,
+                                        DTA_KeepRatio, true,
+                                        DTA_Alpha, cAlpha,
+                                        DTA_Color, fullColor ? textColor : 0xFFFFFFFF,
+                                        DTA_TextLen, charCounter,
+                                        DTA_Filtering, !noFilter,
+                                        DTA_FillColor, stencilColor ? Color(0, stencilColor.r, stencilColor.g, stencilColor.b) : ~0u,
+                                        DTA_Desaturate, desat,
+                                        DTA_ColorOverlay, blendColor,
+                                        DTA_Monospace, monospace ? MONO_CellCenter : 0,
+                                        DTA_Spacing, monospace ? charWidth : 0
+                                    );
+                                }
 
                                 break;
                             }
@@ -451,22 +514,40 @@ class UILabel : UIView {
                     spos.y = floor(spos.y);
                 }
 
-                Screen.DrawText(fnt, Font.CR_UNTRANSLATED, spos.x, spos.y, text,
-                    DTA_VirtualWidthF, vSize.x, DTA_VirtualHeightF, vSize.y,
-                    DTA_KeepRatio, true,
-                    DTA_Alpha, (255.0 / shadowColor.a) * cAlpha,
-                    DTA_Color, shadowStencil ? 0xFFFFFFFF : shadowColor,
-                    DTA_TextLen, charCounter,
-                    DTA_Filtering, !noFilter,
-                    DTA_FillColor, shadowStencil ? Color(0, shadowColor.r, shadowColor.g, shadowColor.b) : ~0u,
-                    DTA_Desaturate, desat,
-                    DTA_ColorOverlay, blendColor,
-                    DTA_Monospace, monospace ? MONO_CellCenter : 0,
-                        DTA_Spacing, monospace ? charWidth : 0
-                );
+                if(drawCanvas) {
+                    drawCanvas.DrawText(fnt, Font.CR_UNTRANSLATED, spos.x, spos.y, text,
+                        DTA_VirtualWidthF, vSize.x, DTA_VirtualHeightF, vSize.y,
+                        DTA_KeepRatio, true,
+                        DTA_Alpha, (255.0 / shadowColor.a) * cAlpha,
+                        DTA_Color, shadowStencil ? 0xFFFFFFFF : shadowColor,
+                        DTA_TextLen, charCounter,
+                        DTA_Filtering, !noFilter,
+                        DTA_FillColor, shadowStencil ? Color(0, shadowColor.r, shadowColor.g, shadowColor.b) : ~0u,
+                        DTA_Desaturate, desat,
+                        DTA_ColorOverlay, blendColor,
+                        DTA_Monospace, monospace ? MONO_CellCenter : 0,
+                            DTA_Spacing, monospace ? charWidth : 0
+                    );
+                } else {
+                    Screen.DrawText(fnt, Font.CR_UNTRANSLATED, spos.x, spos.y, text,
+                        DTA_VirtualWidthF, vSize.x, DTA_VirtualHeightF, vSize.y,
+                        DTA_KeepRatio, true,
+                        DTA_Alpha, (255.0 / shadowColor.a) * cAlpha,
+                        DTA_Color, shadowStencil ? 0xFFFFFFFF : shadowColor,
+                        DTA_TextLen, charCounter,
+                        DTA_Filtering, !noFilter,
+                        DTA_FillColor, shadowStencil ? Color(0, shadowColor.r, shadowColor.g, shadowColor.b) : ~0u,
+                        DTA_Desaturate, desat,
+                        DTA_ColorOverlay, blendColor,
+                        DTA_Monospace, monospace ? MONO_CellCenter : 0,
+                            DTA_Spacing, monospace ? charWidth : 0
+                    );
+                }
             }
 
-            Screen.DrawText(fnt, fullColor ? Font.CR_WHITE : textColor, pos.x, pos.y, text,
+
+            if(drawCanvas) {
+                drawCanvas.DrawText(fnt, fullColor ? Font.CR_WHITE : textColor, pos.x, pos.y, text,
                     DTA_VirtualWidthF, vSize.x, DTA_VirtualHeightF, vSize.y,
                     DTA_KeepRatio, true,
                     DTA_Alpha, cAlpha,
@@ -478,7 +559,22 @@ class UILabel : UIView {
                     DTA_ColorOverlay, blendColor,
                     DTA_Monospace, monospace ? MONO_CellCenter : 0,
                     DTA_Spacing, monospace ? charWidth : 0
-            );
+                );
+            } else {
+                Screen.DrawText(fnt, fullColor ? Font.CR_WHITE : textColor, pos.x, pos.y, text,
+                        DTA_VirtualWidthF, vSize.x, DTA_VirtualHeightF, vSize.y,
+                        DTA_KeepRatio, true,
+                        DTA_Alpha, cAlpha,
+                        DTA_Color, fullColor ? textColor : 0xFFFFFFFF,
+                        DTA_TextLen, charCounter,
+                        DTA_Filtering, !noFilter,
+                        DTA_FillColor, stencilColor ? Color(0, stencilColor.r, stencilColor.g, stencilColor.b) : ~0u,
+                        DTA_Desaturate, desat,
+                        DTA_ColorOverlay, blendColor,
+                        DTA_Monospace, monospace ? MONO_CellCenter : 0,
+                        DTA_Spacing, monospace ? charWidth : 0
+                );
+            }
         }
     }
 

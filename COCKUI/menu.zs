@@ -13,6 +13,7 @@ class UIMenu : GenericMenu {
 	mixin CVARBuddy;
 	mixin UIDrawer;
 
+	Canvas drawCanvas;
 	CVar ui_scaling;
 	UIMenu uiParentMenu;
 	UIView mainView;
@@ -191,7 +192,7 @@ class UIMenu : GenericMenu {
 		// Check for screen size changes since last frame
 		double uiScale = ui_scaling ? ui_scaling.getFloat() : 1.0;
 
-		if(screenSizeChanged() || !(uiScale ~== lastUIScale)) {
+		if((!drawCanvas && screenSizeChanged()) || (!ignoreUIScaling && !(uiScale ~== lastUIScale))) {
 			//mouseX = mouseY = -1;
 			layoutChange(Screen.GetWidth(), Screen.GetHeight());
 		}
@@ -244,7 +245,7 @@ class UIMenu : GenericMenu {
 	virtual void beforeFirstDraw() {}
 
 	override void drawer() {
-		if(screenSizeChanged() || !hasLayedOutOnce) {
+		if(!drawCanvas && (screenSizeChanged() || !hasLayedOutOnce)) {
 			layoutChange(Screen.GetWidth(), Screen.GetHeight());
 		}
 
