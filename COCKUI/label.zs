@@ -11,7 +11,7 @@ class UILabel : UIView {
 
     int charLimit, lineLimit, verticalSpacing;
     bool multiline, noFilter, clipText, pixelAlign, drawShadow, shadowStencil;
-    bool monospace, autoScale;
+    bool monospace, autoScale, charLimitChangesSizes;
     double cacheWidth, cacheAutoScale;
     Alignment textAlign;
 
@@ -157,8 +157,9 @@ class UILabel : UIView {
 
         if(fnt && multiline) {
             double width = calcPinnedWidth(parentSize);
-            
-            BrokenLines bl = fnt.breakLines(text, int(width / fontScale.x));
+            String txt = charLimitChangesSizes ? text.mid(0, charLimit) : text;
+
+            BrokenLines bl = fnt.breakLines(txt, width / fontScale.x);
             for(int x = 0; x < bl.count() && (lineLimit < 1 || x < lineLimit); x++) {
                 double w = getStringWidth(bl.stringAt(x)) * fontScale.x;
                 if(pixelAlign) w = ceil(w);
@@ -173,7 +174,9 @@ class UILabel : UIView {
             
             bl.destroy();
         } else if(fnt) {
-            size.x = MAX(minSize.x, ceil(getStringWidth(text) * fontScale.x));
+            String txt = charLimitChangesSizes ? text.mid(0, charLimit) : text;
+
+            size.x = MAX(minSize.x, ceil(getStringWidth(txt) * fontScale.x));
             size.y = MAX(ceil(fnt.getHeight() * fontScale.y), minSize.y);
         }
 
@@ -246,11 +249,13 @@ class UILabel : UIView {
 
     virtual void layoutText() {
         // Build brokenlines to cache some info about text layout
+        String txt = charLimitChangesSizes ? text.mid(0, charLimit) : text;
+        
         if(multiline && fnt) {
-            lines = fnt.breakLines(text, int((frame.size.x / fontScale.x) + 0.01));
+            lines = fnt.breakLines(txt, int((frame.size.x / fontScale.x) + 0.01));
             cacheAutoScale = 1.0;   // No auto sizing for multiline text yet
         } else {
-            cacheWidth = fnt ? getStringWidth(text) : 0;
+            cacheWidth = fnt ? getStringWidth(txt) : 0;
             double dWidth = cacheWidth * fontScale.x;
             cacheAutoScale = autoScale && dWidth > frame.size.x && dWidth > 0 ? max(minScale, frame.size.x / ceil(dWidth + 2)) : 1.0;
             lines = null;
