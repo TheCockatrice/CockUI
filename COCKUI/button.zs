@@ -96,7 +96,7 @@ class UIButton : UIControl {
     Shape2D drawShape;
     protected UIPadding textPadding;
     protected UIPin textPins[4];
-    bool noFilter;
+    bool noFilter, pixelAlign;
     bool activateOnDownEvent;
     bool selected, mouseInside, requiresRebuild, doubleClickEnabled;
     bool menuSelected;          // Selected by menu system. When selected we stay highlighted even when the mouse exits
@@ -656,7 +656,7 @@ class UIButton : UIControl {
             drawShape.clear();
             UIBox b;
             boundingBoxToScreen(b);
-            bstate.slices.buildShape2(drawShape, (0,0)/*b.pos*/, b.size, cScale);
+            bstate.slices.buildShape(drawShape, (0,0), b.size, cScale, usePixelBoundary: pixelAlign);
         }
 
         requiresRebuild = false;

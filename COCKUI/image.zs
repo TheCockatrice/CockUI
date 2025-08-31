@@ -209,7 +209,7 @@ class UIImage : UIView {
             drawShape.clear();
             UIBox b;
             boundingBoxToScreen(b);
-            slices.buildShape(drawShape, (0,0)/*b.pos*/, b.size, cScale);
+            slices.buildShape(drawShape, (0,0), b.size, cScale, usePixelBoundary: pixelAlign);
 
         } else if(imgStyle == Image_Repeat) {
             if(!drawShape) {

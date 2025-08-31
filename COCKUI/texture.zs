@@ -90,6 +90,7 @@ struct UISTexture {
 
 class NineSlice {
     Vector2 tl, br;
+	Vector2 tlpix, brpix;
     UITexture texture;
     bool drawCenter, scaleCenter, scaleSides;
 
@@ -100,11 +101,13 @@ class NineSlice {
         slice.scaleSides = scaleSides;
         slice.texture = UITexture.Get(tex);
         slice.setPixels(topLeft, bottomRight);
-
+		
         return slice;
     }
 
     void setPixels(Vector2 topLeft, Vector2 bottomRight) {
+		tlpix = topLeft;
+		brpix = bottomRight;
 		tl = (topLeft.x / texture.size.x, topLeft.y / texture.size.y);
 		br = (bottomRight.x / texture.size.x, bottomRight.y / texture.size.y);
     }
@@ -113,247 +116,71 @@ class NineSlice {
         return (a.x * b.x, a.y * b.y);
     }
 
-    // Reused code from ZForms because it works. Thanks ZForms!
-    void buildShape(Shape2D shape, Vector2 pos, Vector2 size, Vector2 scale = (1,1), int pointCount = 0) {
-		if(!texture) return;
+
+	void buildShape(Shape2D shape, Vector2 pos, Vector2 size, Vector2 scale = (1,1), int pointCount = 0, bool usePixelBoundary = false) {
 		Vector2 imageSize = texture.size;
-		Vector2 imageSizeInv = (1.0 / imageSize.x, 1.0 / imageSize.y);
+		
+		if(usePixelBoundary) {
+			pos = (floor(pos.x), floor(pos.y));
+			size = (floor(size.x), floor(size.y));
+		}
 
 		if (imageSize.x < 0 || imageSize.x ~== 0 || imageSize.y < 0 || imageSize.y ~== 0) {
 			return;
 		}
 
-		let absPos = (floor(pos.x), floor(pos.y));
-		let scaledSize = size;
+		// TODO: Not all of these are even used, dummy.
+		Vector2 uv[] = {
+			(0, 0), 	(tl.x, 0), 		(br.x, 0), 		(1, 0),			// Top Row
+			(0, tl.y), 	(tl.x, tl.y), 	(br.x, tl.y),	(1, tl.y),		// Upper Row
+			(0, br.y),  (tl.x, br.y),	(br.x, br.y), 	(1, br.y),		// Lower Row
+			(0, 1), 	(tl.x, 1), 		(br.x, 1), 		(1,1)			// Bottom Row
+		};
 
-		// Raw
-		Vector2 tlRawSize = scaleVec(imageSize, tl);
+		double right = size.x;
+		double bottom = size.y;
+		Vector2 tls = scaleVec(tlpix, scale);
+		Vector2 brs = size - scaleVec(imageSize - brpix, scale);
 
-		Vector2 brRawPos = scaleVec(imageSize, br);
-		Vector2 brRawSize = imageSize - brRawPos;
+		Vector2 hpos[] = {
+			(0, 0), 	(tls.x, 0), 	(brs.x, 0), 	(right, 0),			// Top Row
+			(0, tls.y), (tls.x, tls.y), (brs.x, tls.y),	(right, tls.y),		// Upper Row
+			(0, brs.y), (tls.x, brs.y),	(brs.x, brs.y), (right, brs.y),		// Lower Row
+			(0, bottom),(tls.x, bottom),(brs.x, bottom),(right, bottom)		// Bottom Row
+		};
 
-		Vector2 midRawPos = tlRawSize;
-		Vector2 midRawSize = brRawPos - tlRawSize;
+		// Start with corners because they don't require tiling
+		Shape2DHelper.AddQuadRaw(shape, hpos[0], hpos[5], uv[0], uv[5], pointCount);	// Top Left
+		Shape2DHelper.AddQuadRaw(shape, hpos[2], hpos[7], uv[2], uv[7], pointCount);	// Top Right
+		Shape2DHelper.AddQuadRaw(shape, hpos[8], hpos[13], uv[8], uv[13], pointCount);	// Bottom Left
+		Shape2DHelper.AddQuadRaw(shape, hpos[10], hpos[15], uv[10], uv[15], pointCount);	// Bottom Right
 
-		// UVs
-		Vector2 tlUVSize = scaleVec(tlRawSize, imageSizeInv);
-
-		Vector2 brUVSize = scaleVec(brRawSize, imageSizeInv);
-		Vector2 brUVPos = scaleVec(brRawPos, imageSizeInv);
-
-		Vector2 midUVPos = scaleVec(midRawPos, imageSizeInv);
-		Vector2 midUVSize = scaleVec(midRawSize, imageSizeInv);
-
-		// Scaled
-		Vector2 tlScaledSize = scaleVec(tlRawSize, scale);
-
-		Vector2 brScaledPos = scaleVec(brRawPos, scale);
-		Vector2 brScaledSize = scaleVec(brRawSize, scale);
-
-		Vector2 midScaledPos = scaleVec(midRawPos, scale);
-		Vector2 midScaledSize = scaleVec(midRawSize, scale);
-
-		// Screen
-		Vector2 tlScreenPos = absPos;
-		Vector2 tlScreenSize = tlScaledSize;
-
-		Vector2 brScreenPos = absPos + scaledSize - brScaledSize;
-		Vector2 brScreenSize = (absPos + scaledSize) - brScreenPos;
-
-		Vector2 midScreenPos = tlScreenPos + tlScreenSize;
-		Vector2 midScreenSize = brScreenPos - midScreenPos;
-
-		int vertCount = pointCount;
-
-		/* Corners */ {
-			// Screen
-			Vector2 trScreenPos = (brScreenPos.x, tlScreenPos.y);
-			Vector2 trScreenSize = (brScreenSize.x, tlScreenSize.y);
-
-			Vector2 blScreenPos = (tlScreenPos.x, brScreenPos.y);
-			Vector2 blScreenSize = (tlScreenSize.x, brScreenSize.y);
-			
-			Shape2DHelper.AddQuadRawUV(shape, tlScreenPos, tlScreenSize, (0,0), tl, vertCount);				// Top Left
-			Shape2DHelper.AddQuadRawUV(shape, trScreenPos, trScreenSize, (br.x, 0), (1, tl.y), vertCount);	// Top Right
-			Shape2DHelper.AddQuadRawUV(shape, blScreenPos, blScreenSize, (0, br.y), (tl.x, 1), vertCount);	// Bottom Left
-			Shape2DHelper.AddQuadRawUV(shape, brScreenPos, brScreenSize, (br.x, br.y), (1, 1), vertCount);	// Bottom Right
-		}
-
-		/* Sides */ {
-			// Screen
-			Vector2 topScreenPos = (midScreenPos.x, tlScreenPos.y);
-			Vector2 topScreenSize = (midScreenSize.x, tlScreenSize.y);
-
-			Vector2 bottomScreenPos = (midScreenPos.x, brScreenPos.y);
-			Vector2 bottomScreenSize = (midScreenSize.x, brScreenSize.y);
-
-			Vector2 leftScreenPos = (tlScreenPos.x, midScreenPos.y);
-			Vector2 leftScreenSize = (tlScreenSize.x, midScreenSize.y);
-
-			Vector2 rightScreenPos = (brScreenPos.x, midScreenPos.y);
-			Vector2 rightScreenSize = (brScreenSize.x, midScreenSize.y);
-
-			if(scaleSides) {
-				Shape2DHelper.AddQuadRawUV(shape, topScreenPos, 	topScreenSize, 		(tl.x, 0), 	 (br.x, tl.y),	vertCount);
-				Shape2DHelper.AddQuadRawUV(shape, bottomScreenPos, 	bottomScreenSize, 	(tl.x, br.y), 	(br.x, 1), 	vertCount);
-				Shape2DHelper.AddQuadRawUV(shape, leftScreenPos, 	leftScreenSize, 	(0, tl.y), 	 (tl.x, br.y), 	vertCount);
-				Shape2DHelper.AddQuadRawUV(shape, rightScreenPos, 	rightScreenSize, 	(br.x, tl.y), 	(1, br.y), 	vertCount);
-			} else {
-				Vector2 topUVPos = (midUVPos.x, 0);
-				Vector2 topUVSize = (midUVSize.x, tlUVSize.y);
-
-				Vector2 bottomUVPos = (midUVPos.x, brUVPos.y);
-				Vector2 bottomUVSize = (midUVSize.x, brUVSize.y);
-
-				Vector2 leftUVPos = (0, midUVPos.y);
-				Vector2 leftUVSize = (tlUVSize.x, midUVSize.y);
-
-				Vector2 rightUVPos = (brUVPos.x, midUVPos.y);
-				Vector2 rightUVSize = (brUVSize.x, midUVSize.y);
-
-				Vector2 topScaledSize = (midScaledSize.x, tlScaledSize.y);
-				Vector2 bottomScaledSize = (midScaledSize.x, brScaledSize.y);
-				Vector2 leftScaledSize = (tlScaledSize.x, midScaledSize.y);
-				Vector2 rightScaledSize = (brScaledSize.x, midScaledSize.y);
-
-				Shape2DHelper.AddTiledQuads(shape, topScreenPos, topScreenSize, topScaledSize, topUVPos, topUVSize, vertCount);
-				Shape2DHelper.AddTiledQuads(shape, bottomScreenPos, bottomScreenSize, bottomScaledSize, bottomUVPos, bottomUVSize, vertCount);
-				Shape2DHelper.AddTiledQuads(shape, leftScreenPos, leftScreenSize, leftScaledSize, leftUVPos, leftUVSize, vertCount);
-				Shape2DHelper.AddTiledQuads(shape, rightScreenPos, rightScreenSize, rightScaledSize, rightUVPos, rightUVSize, vertCount);
-			}
-		}
-
+		// Center
 		if(drawCenter) {
 			if(scaleCenter) {
-				Shape2DHelper.AddQuadRawUV(shape, midScreenPos, midScreenSize, tl, br, vertCount);
+				Shape2DHelper.AddQuadRaw(shape, hpos[5], hpos[10], uv[5], uv[10], pointCount);
 			} else {
-				Shape2DHelper.AddTiledQuads(shape, midScreenPos, midScreenSize, midScaledSize, midUVPos, midUVSize, vertCount);
-			}
-		}
-    }
-
-
-	// Same as above but forces (0,0) and (1,1) where necessary
-	void buildShape2(Shape2D shape, Vector2 pos, Vector2 size, Vector2 scale = (1,1), int pointCount = 0) {
-		Vector2 imageSize = texture.size;
-		Vector2 imageSizeInv = (1 / imageSize.x, 1 / imageSize.y);
-
-		if (imageSize.x < 0 || imageSize.x ~== 0 || imageSize.y < 0 || imageSize.y ~== 0) {
-			return;
-		}
-
-		let absPos = (floor(pos.x), floor(pos.y));
-		let scaledSize = size;
-
-		// Raw
-		Vector2 tlRawSize = scaleVec(imageSize, tl);
-
-		Vector2 brRawPos = scaleVec(imageSize, br);
-		Vector2 brRawSize = imageSize - brRawPos;
-
-		Vector2 midRawPos = tlRawSize;
-		Vector2 midRawSize = brRawPos - tlRawSize;
-
-		// UVs
-		Vector2 tlUVSize = scaleVec(tlRawSize, imageSizeInv);
-
-		Vector2 brUVSize = scaleVec(brRawSize, imageSizeInv);
-		Vector2 brUVPos = scaleVec(brRawPos, imageSizeInv);
-
-		Vector2 midUVPos = scaleVec(midRawPos, imageSizeInv);
-		Vector2 midUVSize = scaleVec(midRawSize, imageSizeInv);
-
-		// Scaled
-		Vector2 tlScaledSize = scaleVec(tlRawSize, scale);
-
-		Vector2 brScaledPos = scaleVec(brRawPos, scale);
-		Vector2 brScaledSize = scaleVec(brRawSize, scale);
-
-		Vector2 midScaledPos = scaleVec(midRawPos, scale);
-		Vector2 midScaledSize = scaleVec(midRawSize, scale);
-
-		// Screen
-		Vector2 tlScreenPos = absPos;
-		Vector2 tlScreenSize = tlScaledSize;
-
-		Vector2 brScreenPos = absPos + scaledSize - brScaledSize;
-		Vector2 brScreenSize = (absPos + scaledSize) - brScreenPos;
-
-		Vector2 midScreenPos = tlScreenPos + tlScreenSize;
-		Vector2 midScreenSize = brScreenPos - midScreenPos;
-
-		int vertCount = pointCount;
-
-		/* Corners */ {
-			// UVs
-			Vector2 trUVPos = (brUVPos.x, 0);
-			Vector2 trUVSize = (brUVSize.x, tlUVSize.y);
-
-			Vector2 blUVPos = (0, brUVPos.y);
-			Vector2 blUVSize = (tlUVSize.x, brUVSize.y);
-			// Screen
-			Vector2 trScreenPos = (brScreenPos.x, tlScreenPos.y);
-			Vector2 trScreenSize = (brScreenSize.x, tlScreenSize.y);
-
-			Vector2 blScreenPos = (tlScreenPos.x, brScreenPos.y);
-			Vector2 blScreenSize = (tlScreenSize.x, brScreenSize.y);
-			
-			Shape2DHelper.AddQuad(shape, tlScreenPos, tlScreenSize,  (0, 0), tlUVSize, vertCount);
-			Shape2DHelper.AddQuadRawUV(shape, trScreenPos, trScreenSize, trUVPos, (1, trUVPos.y + trUVSize.y), vertCount);
-			Shape2DHelper.AddQuadRawUV(shape, brScreenPos, brScreenSize, brUVPos, (1,1), vertCount);
-			Shape2DHelper.AddQuadRawUV(shape, blScreenPos, blScreenSize, blUVPos, (blUVPos.x + blUVSize.x, 1), vertCount);
-		}
-
-		/* Sides */ {
-			// UVs
-			Vector2 topUVPos = (midUVPos.x, 0);
-			Vector2 topUVSize = (midUVSize.x, tlUVSize.y);
-
-			Vector2 bottomUVPos = (midUVPos.x, brUVPos.y);
-			Vector2 bottomUVSize = (midUVSize.x, brUVSize.y);
-
-			Vector2 leftUVPos = (0, midUVPos.y);
-			Vector2 leftUVSize = (tlUVSize.x, midUVSize.y);
-
-			Vector2 rightUVPos = (brUVPos.x, midUVPos.y);
-			Vector2 rightUVSize = (brUVSize.x, midUVSize.y);
-			// Screen
-			Vector2 topScreenPos = (midScreenPos.x, tlScreenPos.y);
-			Vector2 topScreenSize = (midScreenSize.x, tlScreenSize.y);
-
-			Vector2 bottomScreenPos = (midScreenPos.x, brScreenPos.y);
-			Vector2 bottomScreenSize = (midScreenSize.x, brScreenSize.y);
-
-			Vector2 leftScreenPos = (tlScreenPos.x, midScreenPos.y);
-			Vector2 leftScreenSize = (tlScreenSize.x, midScreenSize.y);
-
-			Vector2 rightScreenPos = (brScreenPos.x, midScreenPos.y);
-			Vector2 rightScreenSize = (brScreenSize.x, midScreenSize.y);
-
-			if(scaleSides) {
-				Shape2DHelper.AddQuad(shape, topScreenPos, topScreenSize, topUVPos, topUVSize, vertCount);
-				Shape2DHelper.AddQuadRawUV(shape, bottomScreenPos, bottomScreenSize, bottomUVPos, (bottomUVPos.x + bottomUVSize.x, 1), vertCount);
-				Shape2DHelper.AddQuad(shape, leftScreenPos, leftScreenSize, leftUVPos, leftUVSize, vertCount);
-				Shape2DHelper.AddQuadRawUV(shape, rightScreenPos, rightScreenSize, rightUVPos, (1, rightUVPos.y + rightUVSize.y), vertCount);
-			} else {
-				Vector2 topScaledSize = (midScaledSize.x, tlScaledSize.y);
-				Vector2 bottomScaledSize = (midScaledSize.x, brScaledSize.y);
-				Vector2 leftScaledSize = (tlScaledSize.x, midScaledSize.y);
-				Vector2 rightScaledSize = (brScaledSize.x, midScaledSize.y);
-
-				Shape2DHelper.AddTiledQuads(shape, topScreenPos, topScreenSize, topScaledSize, topUVPos, topUVSize, vertCount);
-				Shape2DHelper.AddTiledQuads(shape, bottomScreenPos, bottomScreenSize, bottomScaledSize, bottomUVPos, bottomUVSize, vertCount);
-				Shape2DHelper.AddTiledQuads(shape, leftScreenPos, leftScreenSize, leftScaledSize, leftUVPos, leftUVSize, vertCount);
-				Shape2DHelper.AddTiledQuads(shape, rightScreenPos, rightScreenSize, rightScaledSize, rightUVPos, rightUVSize, vertCount);
+				Vector2 midScaledSize = (brs.x - tls.x, brs.y - tls.y);
+				Shape2DHelper.AddTiledQuads(shape, hpos[5], (brs.x - tls.x, brs.y - tls.y), midScaledSize, uv[5], (uv[10].x - uv[5].x, uv[10].y - uv[5].y), pointCount);
 			}
 		}
 
-		if(drawCenter) {
-			if(scaleCenter) {
-				Shape2DHelper.AddQuad(shape, midScreenPos, midScreenSize, midUVPos, midUVSize, vertCount);
-			} else {
-				Shape2DHelper.AddTiledQuads(shape, midScreenPos, midScreenSize, midScaledSize, midUVPos, midUVSize, vertCount);
-			}
+		// Sides
+		if(scaleSides) {
+			Shape2DHelper.AddQuadRaw(shape, hpos[1], hpos[6],  uv[1], uv[6],  pointCount);	// Top
+			Shape2DHelper.AddQuadRaw(shape, hpos[9], hpos[14], uv[9], uv[14], pointCount);	// Bottom
+			Shape2DHelper.AddQuadRaw(shape, hpos[4], hpos[9],  uv[4], uv[9],  pointCount);	// Left
+			Shape2DHelper.AddQuadRaw(shape, hpos[6], hpos[11], uv[6], uv[11], pointCount);	// Right
+		} else {
+			Vector2 topScaledSize 		= (brs.x - tls.x, tls.y);
+			Vector2 bottomScaledSize 	= (brs.x - tls.x, bottom - brs.y);
+			Vector2 leftScaledSize 		= (tls.x, 		  brs.y - tls.y);
+			Vector2 rightScaledSize 	= (right - brs.x, brs.y - tls.y);
+
+			Shape2DHelper.AddTiledQuads(shape, hpos[1], (brs.x - tls.x, tls.y), topScaledSize, uv[1], (uv[6].x - uv[1].x, uv[6].y - uv[1].y), pointCount);					// Top
+			Shape2DHelper.AddTiledQuads(shape, hpos[9], (brs.x - tls.x, bottom - brs.y), bottomScaledSize, uv[9], (uv[14].x - uv[9].x, uv[14].y - uv[9].y), pointCount);	// Bottom
+			Shape2DHelper.AddTiledQuads(shape, hpos[4], (tls.x, brs.y - tls.y), leftScaledSize, uv[4], (uv[9].x - uv[4].x, uv[9].y - uv[4].y), pointCount);					// Left
+			Shape2DHelper.AddTiledQuads(shape, hpos[6], (right - brs.x, brs.y - tls.y), rightScaledSize, uv[6], (uv[11].x - uv[6].x, uv[11].y - uv[6].y), pointCount);		// Right
 		}
     }
 }

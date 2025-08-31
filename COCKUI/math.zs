@@ -252,6 +252,23 @@ class Shape2DHelper {
 		vertCount += 4;
 	}
 
+    static void AddQuadRaw(Shape2D shape, Vector2 startPos, Vector2 endPos, Vector2 uvStart, Vector2 uvEnd, out int vertCount) {
+		shape.pushVertex((startPos.x    , startPos.y         ));
+		shape.pushVertex((endPos.x      , startPos.y         ));
+		shape.pushVertex((startPos.x    , endPos.y      ));
+		shape.pushVertex((endPos.x      , endPos.y      ));
+
+		shape.pushTriangle(vertCount + 0, vertCount + 3, vertCount + 1);
+		shape.pushTriangle(vertCount + 0, vertCount + 2, vertCount + 3);
+
+		shape.pushCoord((uvStart.x  , uvStart.y ));
+		shape.pushCoord((uvEnd.x    , uvStart.y ));
+		shape.pushCoord((uvStart.x  , uvEnd.y   ));
+		shape.pushCoord((uvEnd.x    , uvEnd.y   ));
+
+		vertCount += 4;
+	}
+
     static void AddQuadRawUV4(Shape2D shape, Vector2 pos, Vector2 size, Vector2 uv1, Vector2 uv2, Vector2 uv3, Vector2 uv4, out int vertCount) {
 		shape.pushVertex((pos.x         , pos.y         ));
 		shape.pushVertex((pos.x + size.x, pos.y         ));
