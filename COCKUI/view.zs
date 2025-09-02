@@ -556,7 +556,9 @@ class UIView ui {
                     case UIPin.Pin_Right:
                         right = p.isFactor ? p.getParentPos(parentSize) * p.value + p.offset : p.getParentPos(parentSize) + p.offset;
                         rightPriority = p.priority;
-                        right /= scale.x;
+                        if(scale.x != 0) right /= scale.x;
+                        else right = 0;
+
                         break;
                     case UIPin.Pin_Top:
                         top = p.isFactor ? p.getParentPos(parentSize) * p.value + p.offset : p.getParentPos(parentSize) + p.offset;
@@ -565,7 +567,9 @@ class UIView ui {
                     case UIPin.Pin_Bottom:
                         bottom = p.isFactor ? p.getParentPos(parentSize) * p.value + p.offset : p.getParentPos(parentSize) + p.offset;
                         bottomPriority = p.priority;
-                        bottom /= scale.y;
+                        if(scale.y != 0) bottom /= scale.y;
+                        else bottom = 0;
+
                         break;
                     case UIPin.Pin_HCenter: {
                             double center = p.getParentPos(parentSize) * p.value + p.offset;

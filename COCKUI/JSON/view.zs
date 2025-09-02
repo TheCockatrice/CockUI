@@ -257,7 +257,9 @@ extend class UIView {
 		JsonElementOrError data = JSON.parse(Wads.ReadLump(lump), false);
 		if(data is "JsonError"){
 			ThrowAbortException("%s :  %s", filename, JsonError(data).what);
-		}
+		} else if(!(data is "JsonObject")) {
+            ThrowAbortException("UIView::Load() %s is not at JSONObject at root", filename);
+        }
 
         buildFromJson(JSONObject(data));
     }
