@@ -368,6 +368,7 @@ class UIView ui {
 
         for(int x = 0; x < subviews.size(); x++) {
             let sv = subviews[x];
+            sv.layoutIfNecessary();     // We require accurate coordinates for the clip rect
 
             if(!sv.ignoresClipping) {
                 sv.getScreenClip(svClipRect);
