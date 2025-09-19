@@ -285,7 +285,7 @@ class UILabel : UIView {
         int charWidth = fnt.GetCharWidth("0");
         int spaceWidth = fnt.GetCharWidth(" ");
 
-        bool drawCursor = cursorPos >= 0 && (MSTimeF() / 250) % 2 == 0;
+        bool drawCursor = cursorPos >= 0 && (MSTime() / 250) % 2 == 0;
 
         if(multiline) {
             bool fullColor = !(textColor <= 128 && textColor >= 0);
