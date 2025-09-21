@@ -118,10 +118,12 @@ class UIView ui {
     double alpha, angle;
     Vector2 scale, rotCenter;
 
+    int cStencil;     // Calculated stencil level during draw, should be 0 at other times
     double cAlpha;    // Calculated alpha during Layout()
     Vector2 cScale;   // Calculated scale during Layout()
 
     protected Array<UIView> subviews;
+    protected UIView mask;
 
     Array<UIPin> pins;
     UIPin widthPin, heightPin;
@@ -229,6 +231,13 @@ class UIView ui {
                 viewLookup.insert(Name(newSv.id), newSv);
             }
         }
+
+        // Set mask
+        if(template.mask) {
+            setMask(template.mask.clone());
+        } else {
+            mask = null;
+        }
     }
 
 
@@ -241,6 +250,30 @@ class UIView ui {
         foreach(v : subviews) {
             v.setCanvas(c);
         }
+    }
+
+    void setMask(UIView v) {
+        if(mask) removeMask();
+        mask = v;
+        v.parent = self;
+    }
+
+    void clearMask(bool delete = true, UIRecycler recycler = null) {
+        if(delete && mask) {
+            mask.teardown(recycler);
+            mask.destroy();
+        }
+        mask = null;
+    }
+
+    void removeMask() {
+        if(mask) 
+            mask.parent = null;
+        mask = null;
+    }
+
+    UIView getMask() {
+        return mask;
     }
 
     UIPin pin(int anchor = 0, int parentAnchor = -1, double value = 0, double offset = 0, bool isFactor = false, int priority = 0) {
@@ -343,6 +376,48 @@ class UIView ui {
         requiresLayout = true;
     }
 
+    virtual void drawMask(int stencilLevel) {
+        // Prepare for drawing the stencil
+        Screen.SetStencil(stencilLevel, SOP_Increment, SF_ColorMaskOff);
+        cStencil = stencilLevel ? stencilLevel << 1 : 1;
+
+        // TODO: Handle special clipping rules for masks
+        // Draw the mask view
+        mask.layoutIfNecessary();
+        mask.draw();
+        mask.drawSubviews();
+
+        /*Screen.DrawTexture(TexMan.CheckForTexture("WPNICON4"), false, 0, 0, 
+            DTA_DestWidth, Screen.GetWidth(),
+            DTA_DestHeight, Screen.GetHeight()
+        );*/
+
+        // Set drawn stencil active
+        Screen.SetStencil(cStencil, SOP_Keep, SF_AllOn);
+
+        Console.Printf("Drew mask at x: %f y: %f w: %f h: %f to stencil level %d", mask.frame.pos.x, mask.frame.pos.y, mask.frame.size.x, mask.frame.size.y, cStencil);
+    }
+
+    virtual void undrawMask() {
+        if(cStencil == 0 || cStencil == 1) {
+            // Just clear the whole thing and revert
+            Screen.ClearStencil();
+            Screen.SetStencil(0, SOP_Keep, SF_AllOn);
+
+            Console.Printf("Undrew mask, cleared stencil");
+            return;
+        }
+
+        Screen.SetStencil(cStencil, SOP_Decrement);
+        
+        // Draw over the current stencil area
+        Screen.Clear(0, 0, Screen.GetWidth(), Screen.GetHeight(), 0xFFFFFFFF);
+        
+        Screen.SetStencil(cStencil >> 1, SOP_Keep, SF_AllOn);
+
+        Console.Printf("Undrew mask, decremented to stencil level %d", cStencil >> 1);
+    }
+
     virtual void draw() {
         if(hidden) { return; }
         
@@ -357,8 +432,11 @@ class UIView ui {
         }
     }
 
+
     virtual void drawSubviews() {
         if(hidden || subviews.size() == 0) { return; }
+
+        cStencil = parent ? parent.cStencil : 0;
 
         UIBox clipRect;
         UIBox svClipRect;
@@ -379,6 +457,10 @@ class UIView ui {
 
             if(!ignoresClipping) setClip(int(clipRect.pos.x), int(clipRect.pos.y), int(clipRect.size.x), int(clipRect.size.y));
 
+            if(sv.mask) {
+                sv.drawMask(cStencil);
+            }
+
             if(sv.drawSubviewsFirst) {
                 sv.drawSubviews();
 
@@ -391,6 +473,9 @@ class UIView ui {
                 sv.drawSubviews();
             }
             
+            if(sv.mask) {
+                sv.undrawMask();
+            }
         }
     }
 
@@ -406,6 +491,8 @@ class UIView ui {
         for(int x = 0; x < subviews.size(); x++) {
             subviews[x].Tick();
         }
+
+        if(mask) mask.Tick();
     }
 
     virtual bool event(ViewEvent ev) {
@@ -687,6 +774,7 @@ class UIView ui {
         for(int i = 0; i < subviews.size(); i++) {
             subviews[i].layout(cScale, cAlpha);
         }
+        if(mask) mask.layout(cScale, cAlpha);
         layingOutSubviews = false;
     }
 

@@ -146,6 +146,17 @@ extend class UIView {
             }
         }
 
+        // Deserialize mask
+        JsonObject j_mask = JsonObject(obj.get("mask"));
+        if(j_mask) {
+            let mmask = UIView.deserialize(j_mask, templates, parentView: self);
+            if(!mmask) {
+                Console.Printf("\c[RED]UIView: Failed to deserialize mask from object %s", j_mask.getClassName());
+            } else {
+                setMask(mmask);
+            }
+        }
+
         return self;
     }
 
