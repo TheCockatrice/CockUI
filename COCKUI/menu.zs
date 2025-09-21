@@ -268,8 +268,11 @@ class UIMenu : GenericMenu {
 			testMouse(mouseX, mouseY, true);
 		}
 
+		Screen.EnableStencil(true);
 		mainView.draw();
 		mainView.drawSubviews();
+		Screen.EnableStencil(false);
+		Screen.ClearStencil();
 	}
 
 	Vector2 getMousePos(bool viewRelative = false) {
