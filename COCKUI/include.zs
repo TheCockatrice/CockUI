@@ -25,4 +25,4 @@
 #include "./colorpicker.zs"
 #include "./scriptcode.zs"
 
-#include "./JSON/include.zs
+#include "./JSON/include.zs"
