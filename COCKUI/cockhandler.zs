@@ -1,5 +1,6 @@
 class CockHandler : StaticEventHandler {
     ui Map<Name, UIView> templateViews;
+    ui bool hasLoadedTemplates;
 
     static clearscope CockHandler instance() {
         return CockHandler(StaticEventHandler.Find("CockHandler"));
@@ -11,6 +12,11 @@ class CockHandler : StaticEventHandler {
             ThrowAbortException("\c[RED]CockHandler::GetTemplateView() No instance of CockHandler found!");
             return null;
         }
+
+        if(!handler.hasLoadedTemplates) {
+            handler.loadTemplates("interfaces/templates.json", developer > 0);
+        }
+
         return handler.templateViews.getIfExists(id);
     }
 
@@ -41,6 +47,9 @@ class CockHandler : StaticEventHandler {
     }
 
     ui void loadTemplates(string filename, bool haltOnError = true) {
+        if(hasLoadedTemplates) return;
+        hasLoadedTemplates = true;
+
         if(developer) Console.Printf("\c[green]CockHandler: Loading templates from %s", filename);
 
         int lump = Wads.CheckNumForFullName(filename);
