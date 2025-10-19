@@ -46,16 +46,16 @@ class CockHandler : StaticEventHandler {
         EventHandler.SendInterfaceEvent(consolePlayer, "EngineInitialize");
     }
 
-    ui void loadTemplates(string filename, bool haltOnError = true) {
+    ui void loadTemplates(string filename, bool haltOnError = true, bool subPath = false) {
         if(hasLoadedTemplates) return;
-        hasLoadedTemplates = true;
-
+        
         if(developer) Console.Printf("\c[green]CockHandler: Loading templates from %s", filename);
 
         int lump = Wads.CheckNumForFullName(filename);
 		if(lump == -1) {
 			if(haltOnError) ThrowAbortException("CockHandler::loadTemplates() Could not find %s", filename);
             else Console.Printf("\c[RED]CockHandler::loadTemplates() Could not find %s", filename);
+            if(!subPath) hasLoadedTemplates = true;
             return;
 		}
 
@@ -68,12 +68,14 @@ class CockHandler : StaticEventHandler {
         let rootElement = JSONObject(data);
         foreach(key, elem : rootElement.data) {
             if(key == "include") {
+                if(developer > 1) Console.Printf("\c[YELLOW]CockHandler: Processing includes in %s", filename);
+
                 // Handle includes
                 if(elem is 'JsonArray') {
                     foreach(includeElem : JsonArray(elem).arr) {
                         if(includeElem is 'JsonString') {
                             String includePath = JsonString(includeElem).s;
-                            loadTemplates(includePath, haltOnError);
+                            loadTemplates(includePath, haltOnError, true);
                         } else {
                             Console.Printf("\c[RED]CockHandler::loadTemplates() Invalid include format for %s in [%s]", key, filename);
                         }
@@ -91,5 +93,14 @@ class CockHandler : StaticEventHandler {
                 templateViews.insert(Name(key), template);
             }
         }
+
+        // Debug output a list of all templates loaded
+        if(developer > 1) {
+            foreach(key, t : templateViews) {
+                Console.Printf("\c[YELLOW]DEBUG::CockHandler: Loaded template '%s' (%s)", key, t.getClassName());
+            }
+        }
+
+        if(!subPath) hasLoadedTemplates = true;
     }
 }
