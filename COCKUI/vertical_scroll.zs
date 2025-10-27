@@ -148,18 +148,22 @@ class UIVerticalScroll : UIControl {
             hugEnd = t.hugEnd;
             barWidth = t.barWidth;
             mouseScrollAmount = t.mouseScrollAmount;
-
-            if(t.mLayout)  mLayout = UIVerticalLayout(subviews[t.indexOf(t.mLayout)]);
+            
             if(t.scrollbar) scrollbar = UISlider(subviews[t.indexOf(t.scrollbar)]);
 
-            if(!mLayout || !scrollbar) {
-                ThrowAbortException("UIVerticalScroll::applyTemplate: Missing mLayout or scrollbar in template '%s'", template.getClassName());
-            }
+            // Horizontal handles this
+            if(!(self is 'UIHorizontalScroll')) {
+                if(t.mLayout)  mLayout = UIVerticalLayout(subviews[t.indexOf(t.mLayout)]);
+                
+                if(!mLayout || !scrollbar) {
+                    ThrowAbortException("UIVerticalScroll::applyTemplate: Missing mLayout or scrollbar in template '%s'", template.getClassName());
+                }
 
-            layoutTopPin = mLayout.firstPin(UIPin.Pin_Top);
+                layoutTopPin = mLayout.firstPin(UIPin.Pin_Top);
 
-            if(!layoutTopPin) {
-                layoutTopPin = mLayout.pin(UIPin.Pin_Top);
+                if(!layoutTopPin) {
+                    layoutTopPin = mLayout.pin(UIPin.Pin_Top);
+                }
             }
         }
     }

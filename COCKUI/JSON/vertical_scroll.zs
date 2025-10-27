@@ -1,7 +1,5 @@
 extend class UIVerticalScroll {
-    override UIView _deserialize(JsonObject obj, Map<Name, UIView> templates, UIView parentView) {
-        Super._deserialize(obj, templates, parentView);
-
+    virtual void _deserializeStandard(JsonObject obj, Map<Name, UIView> templates, UIView parentView) {
         getOptionalDouble(obj, "mouseScrollAmount", mouseScrollAmount);
         getOptionalDouble(obj, "scrollBarPadding", scrollBarPadding);
         getOptionalDouble(obj, "barWidth", barWidth);
@@ -9,9 +7,11 @@ extend class UIVerticalScroll {
         getOptionalBool(obj, "autoHideAdjustsSize", autoHideAdjustsSize);
         getOptionalBool(obj, "hugEnd", hugEnd);
 
-        mLayout = UIVerticalLayout( deserializeOptionalView(obj, "layout", 'UIVerticalLayout', mLayout, templates) );
+        mLayout = UIVerticalLayout( deserializeOptionalView(obj, "layout", self is 'UIHorizontalScroll' ? 'UIHorizontalLayout' : 'UIVerticalLayout', mLayout, templates) );
         scrollBar = UISlider( deserializeOptionalView(obj, "scrollBar", 'UISlider', scrollBar, templates) );
+    }
 
+    virtual void _deserializeLayout(JsonObject obj, Map<Name, UIView> templates, UIView parentView) {
         if(barWidth == 0 && scrollBar) {
             barWidth = scrollBar.frame.size.x;
         }
@@ -52,7 +52,60 @@ extend class UIVerticalScroll {
         }
 
         scrollBar.isVertical = true; // Forced vertical
+    }
+
+    override UIView _deserialize(JsonObject obj, Map<Name, UIView> templates, UIView parentView) {
+        Super._deserialize(obj, templates, parentView);
+
+        _deserializeStandard(obj, templates, parentView);
+        _deserializeLayout(obj, templates, parentView);
 
         return self;
+    }
+}
+
+
+extend class UIHorizontalScroll {
+    override void _deserializeLayout(JsonObject obj, Map<Name, UIView> templates, UIView parentView) {
+        if(barWidth == 0 && scrollBar) {
+            barWidth = scrollBar.frame.size.y;
+        }
+
+        if(!mLayout) {
+            // Create default layout
+            mLayout = new("UIHorizontalLayout").init((0,0), (100,100));
+            layoutTopPin = mLayout.pin(UIPin.Pin_Left);
+            mLayout.pin(UIPin.Pin_Top);
+            mLayout.pin(UIPin.Pin_Bottom, offset: -scrollbarPadding);
+            mLayout.layoutMode = UIViewManager.Content_SizeParent;
+            add(mLayout);
+        } else {
+            if(!mLayout.parent) {
+                mLayout.pin(UIPin.Pin_Top);
+                mLayout.pin(UIPin.Pin_Bottom, offset: -(scrollbarPadding));
+                mLayout.layoutMode = UIViewManager.Content_SizeParent;
+                add(mLayout);
+            }
+
+            if(layoutTopPin == null) {
+                layoutTopPin = mLayout.firstPin(UIPin.Pin_Left);
+                if(!layoutTopPin) layoutTopPin = mLayout.pin(UIPin.Pin_Left);
+            }
+        }
+
+        if(!scrollBar) {
+            // Scrollbar must be specified
+            ThrowAbortException("UIHorizontalScroll::_deserialize No scrollbar inherited or specified for '%s'", getClassName());
+        } else {
+            if(!scrollbar.firstPin(UIPin.Pin_Right)) scrollbar.pin(UIPin.Pin_Right);
+            if(!scrollbar.firstPin(UIPin.Pin_Left)) scrollbar.pin(UIPin.Pin_Left);
+            if(!scrollbar.firstPin(UIPin.Pin_Bottom)) scrollbar.pin(UIPin.Pin_Bottom);
+            scrollbar.increment = 0.1;
+
+            if(scrollbar.parent != self)
+                add(scrollbar);
+        }
+
+        scrollBar.isVertical = false; // Forced horizontal
     }
 }

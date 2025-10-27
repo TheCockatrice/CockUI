@@ -65,6 +65,26 @@ class UIHorizontalScroll : UIVerticalScroll {
     }
 
 
+    override void applyTemplate(UIView template) {
+        Super.applyTemplate(template);
+
+        UIHorizontalScroll t = UIHorizontalScroll(template);
+
+        if(t) {
+            if(t.mLayout)  mLayout = UIHorizontalLayout(subviews[t.indexOf(t.mLayout)]);
+            if(!mLayout) {
+                ThrowAbortException("UIHorizontalScroll::applyTemplate: Missing mLayout in template '%s'", template.getClassName());
+            }
+
+            layoutTopPin = mLayout.firstPin(UIPin.Pin_Top);
+
+            if(!layoutTopPin) {
+                layoutTopPin = mLayout.pin(UIPin.Pin_Top);
+            }
+        }
+    }
+
+
     override void handleScrollbar(double value, bool sendEvt, bool fromMouse, bool fromController) {
         if(contentsCanScroll()) {
             layoutTopPin.offset = -((mLayout.frame.size.x - frame.size.x) * value);
