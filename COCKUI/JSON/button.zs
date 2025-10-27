@@ -13,6 +13,7 @@ extend class UIButton {
         getOptionalDouble(obj, "imgScaleX", imgScale.x);
         getOptionalDouble(obj, "imgScaleY", imgScale.y);
         getOptionalString(obj, "textAlign", textAlignString);
+        getOptionalString(obj, "command", command);
 
         // Determine text alignment
         if(textAlignString != "") {
