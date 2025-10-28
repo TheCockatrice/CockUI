@@ -1043,6 +1043,34 @@ class UIView ui {
         return idx;
     }
 
+    
+    // If deep, search subviews recursively otherwise only goes one level deep
+    virtual UIControl getFirstControl(bool deep = false, bool ignoreHidden = true) {
+        foreach(sv : subviews) {
+            if(sv is 'UIControl' && (!ignoreHidden || !sv.hidden)) {
+                return UIControl(sv);
+            } else if(deep) {
+                UIControl c = sv.getFirstControl(true);
+                if(c) return c;
+            }
+        }
+        return null;
+    }
+
+    
+    virtual UIControl getLastControl(bool deep = false, bool ignoreHidden = true) {
+        for(int i = subviews.size() - 1; i >= 0; i--) {
+            let sv = subviews[i];
+            if(sv is 'UIControl' && (!ignoreHidden || !sv.hidden)) {
+                return UIControl(sv);
+            } else if(deep) {
+                UIControl c = sv.getLastControl(true);
+                if(c) return c;
+            }
+        }
+        return null;
+    }
+
 
     // Must return false if no action was taken
     virtual bool handleSubControl(UIControl ctrl, int event, bool fromMouse = false, bool fromController = false) {
@@ -1303,6 +1331,7 @@ class UIControl : UIView {
     bool rejectHoverSelection;  // Menu will not select this control on a mouseOver event
     bool cancelsHoverDeSelect;  // Menu will not deselect this control on a mouseExit event, unless the new view is a control
     bool globalDragging;        // This view is being managed by the menu and is in the dragging state
+    bool rejectAutoLinking;     // This control will not be auto-linked by the menu system
 
     protected bool disabled;
     string command;

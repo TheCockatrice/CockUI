@@ -160,6 +160,21 @@ class UIViewManager : UIView {
         requiresLayout = true;
     }
 
+    // Run custom sort using the provided comparator function
+    virtual void sortManaged(Function<ui int(UIView, UIView)> comparator) {
+        for(int i = 0; i < managedViews.size() - 1; i++) {
+            for(int j = i + 1; j < managedViews.size(); j++) {
+                if(comparator.call(managedViews[i], managedViews[j]) > 0) {
+                    let temp = managedViews[i];
+                    managedViews[i] = managedViews[j];
+                    managedViews[j] = temp;
+                }
+            }
+        }
+        requiresLayout = true;
+    }
+
+
     virtual void setPadding(double left = 0, double top = 0, double right = 0, double bottom = 0) {
         padding.left = left;
         padding.right = right;
@@ -170,6 +185,31 @@ class UIViewManager : UIView {
 
     virtual UIView addSpacer(double size) {
         // Do nothing
+        return null;
+    }
+
+    override UIControl getFirstControl(bool deep, bool ignoreHidden) {
+        foreach(sv : managedViews) {
+            if(sv is 'UIControl' && (!ignoreHidden || !sv.hidden)) {
+                return UIControl(sv);
+            } else if(deep) {
+                UIControl c = sv.getFirstControl(true);
+                if(c) return c;
+            }
+        }
+        return null;
+    }
+
+    override UIControl getLastControl(bool deep, bool ignoreHidden) {
+        for(int i = managedViews.size() - 1; i >= 0; i--) {
+            let sv = managedViews[i];
+            if(sv is 'UIControl' && (!ignoreHidden || !sv.hidden)) {
+                return UIControl(sv);
+            } else if(deep) {
+                UIControl c = sv.getLastControl(true);
+                if(c) return c;
+            }
+        }
         return null;
     }
 }

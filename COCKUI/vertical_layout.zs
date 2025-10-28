@@ -208,4 +208,38 @@ class UIVerticalLayout : UIViewManager {
         addManaged(v);
         return v;
     }
+
+
+    // Go through all managed views to find controls linkable for navigation
+    virtual void linkNavigation(UIControl upControl = null, UIControl downControl = null, UIControl leftControl = null, UIControl rightControl = null, bool deepSearch = false) {
+        UIControl prevControl;
+
+        foreach(sv : managedViews) {
+            if(ignoreHiddenViews && sv.hidden) continue;
+
+            UIControl con = UIControl(sv);
+            if(!con && deepSearch) {
+                con = sv.getFirstControl(deep: true);
+            }
+
+            if(con) {
+                if(prevControl) {
+                    prevControl.navDown = con;
+                    con.navUp = prevControl;
+                } else if(upControl) {
+                    con.navUp = upControl;
+                    upControl.navDown = con;
+                }
+
+                prevControl = con;
+                con.navLeft = leftControl;
+                con.navRight = rightControl;
+            }
+        }
+
+        if(prevControl && downControl) {
+            prevControl.navDown = downControl;
+            downControl.navUp = prevControl;
+        }
+    }
 }
