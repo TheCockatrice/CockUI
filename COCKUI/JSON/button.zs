@@ -14,6 +14,9 @@ extend class UIButton {
         getOptionalDouble(obj, "imgScaleY", imgScale.y);
         getOptionalString(obj, "textAlign", textAlignString);
         getOptionalString(obj, "command", command);
+        
+        double desat;
+        if(getOptionalDouble(obj, "desaturation", desat)) desaturation = desat;
 
         // Determine text alignment
         if(textAlignString != "") {
@@ -59,7 +62,7 @@ extend class UIButton {
             if(getOptionalString(obj, "shadowColor", col)) label.shadowColor = parseColor(col);
             if(getOptionalString(obj, "textColor", col)) label.textColor = parseColor(col);
             if(getOptionalString(obj, "stencilColor", col)) label.stencilColor = parseColor(col);
-            if(getOptionalString(obj, "blendColor", col)) label.blendColor = parseColor(col);
+            if(getOptionalString(obj, "blendColor", col)) blendColor = parseColor(col);
             if(getOptionalString(obj, "textBackgroundColor", col)) label.textBackgroundColor = parseColor(col);
 
             // Extended info can be put in "label" sub object
