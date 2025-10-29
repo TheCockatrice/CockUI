@@ -70,13 +70,25 @@ class UIViewAnimator ui {
         let now = getTime();
         if(time == -1) time = now;
 
-        for(int y = 0; y < animations.size(); y++) {
+        for(int y = animations.size() - 1; y >= 0; y--) {
             if(animations[y].view == forView) {
                 if(cancelUnstarted && animations[y].startTime >= now) {
                     animations[y].finishOnCancel = false;
                     animations[y].cancel();
                 } else {
                     animations[y].endTime = MIN(time, animations[y].endTime);
+
+                    if(time >= now) {
+                        animations[y].finishOnCancel = true;
+                        animations[y].cancel();
+
+                        if(animations[y].selfDestruct && animations[y].view) {
+                            animations[y].view.removeFromSuperview();
+                        }
+
+                        animations.delete(y);
+                        continue;
+                    }
                 }
             }
         }
