@@ -88,6 +88,17 @@ class UIButton : UIControl {
         State_Disabled,
         NUM_STATES
     };
+
+    static const string StateDebugNames[] = {
+        "Normal",
+        "Hover",
+        "Pressed",
+        "Selected",
+        "SelectedHover",
+        "SelectedPressed",
+        "Disabled",
+        "Unknown"
+    };
     
     ButtonState currentState;
     UIButtonState buttStates[NUM_STATES];
