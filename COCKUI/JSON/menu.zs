@@ -16,15 +16,39 @@ extend class UIMenu {
         getOptionalString(obj, "defaultCursor", defaultCursor);
 
         // Deserialize template views first, so the views have something to reference
+        // Do this in two stages:
+        // 1) Deserialize all templates that don't reference unknown templates
+        // 2) Deserialize remaining templates, allowing references to previously deserialized templates
         JSONObject j_templateViews = JSONObject(obj.get("templateViews"));
         if(j_templateViews) {
             foreach(key, j_template : j_templateViews.data) {
-                UIView template = UIView.deserialize(j_template);
+                JsonObject j_obj = JsonObject(j_template);
+                if(j_obj) {
+                    JsonString j_template = JsonString(j_obj.get("template"));
+                    if(j_template && j_template.s != "" && !templateViews.checkKey(j_template.s))  
+                        continue;   // Skip templates that reference unknown templates
+                }
+
+                UIView template = UIView.deserialize(j_template, templateViews);
                 if(!template) Console.Printf("\c[RED]UIView: Failed to deserialize template view from object %s", j_template.getClassName());
                 else {
                     templateViews.insert(Name(key), template);
                 }
             }
+
+            // Now deserialize those that we skipped
+            foreach(key, j_template : j_templateViews.data) {
+                if(templateViews.checkKey(Name(key))) 
+                    continue;   // Already deserialized
+
+                UIView template = UIView.deserialize(j_template, templateViews);
+                if(!template) Console.Printf("\c[RED]UIView: Failed to deserialize template view from object %s", j_template.getClassName());
+                else {
+                    templateViews.insert(Name(key), template);
+                }
+            }
+
+            // Note: This might end up with two errors for templates that can't be deserialized, but whatever
         }
 
         // Start deserializing the main view

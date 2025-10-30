@@ -65,6 +65,10 @@ class CockHandler : StaticEventHandler {
             return;
 		}
 		
+        // Do this in two stages:
+        // 1) Deserialize all templates that don't reference unknown templates, also process includes in the first sweep
+        // 2) Deserialize remaining templates, allowing references to previously deserialized templates
+
         let rootElement = JSONObject(data);
         foreach(key, elem : rootElement.data) {
             if(key == "include") {
@@ -85,10 +89,41 @@ class CockHandler : StaticEventHandler {
                 }
                 continue;
             }
+            
+            JsonObject j_obj = JsonObject(elem);
+            if(j_obj) {
+                JsonString j_template = JsonString(j_obj.get("template"));
+                if(j_template && j_template.s != "" && !templateViews.checkKey(j_template.s))
+                    continue;   // Skip templates that reference unknown templates
+            }
 
-            UIView template = UIView.deserialize(JsonObject(elem));
+            UIView template = UIView.deserialize(JsonObject(elem), templateViews);
             if(!template) {
                 Console.Printf("\c[RED]CockHandler::loadTemplates() Failed to deserialize template %s", key);
+            } else {
+                templateViews.insert(Name(key), template);
+            }
+        }
+
+
+        // Second pass: Now deserialize those that we skipped
+        foreach(key, elem : rootElement.data) {
+            if(templateViews.checkKey(Name(key))) 
+                continue;   // Already deserialized
+
+            JsonObject j_obj = JsonObject(elem);
+            if(j_obj) {
+                JsonString j_template = JsonString(j_obj.get("template"));
+                if(!j_template) {
+                    continue;
+                }
+            } else {
+                continue;
+            }
+
+            UIView template = UIView.deserialize(JsonObject(elem), templateViews);
+            if(!template) {
+                Console.Printf("\c[RED]CockHandler::loadTemplates() Failed to deserialize template (stage 2) %s", key);
             } else {
                 templateViews.insert(Name(key), template);
             }
