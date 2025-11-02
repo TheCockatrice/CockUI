@@ -86,8 +86,6 @@ class UIHorizontalLayout : UIViewManager {
 
                 // We skipped subviews before so lay them out now
                 managed.layoutSubviews();
-
-                //if(developer > 1) managed.backgroundColor = Color(255, random(0, 255), random(127, 255), random(0, 255));
             }
         } else if(layoutMode == Content_SizeParent) {
             // Briefly fudge our width so auto sizing views work
@@ -136,6 +134,14 @@ class UIHorizontalLayout : UIViewManager {
             frame.size.y = MAX(contentHeight + padding.top + padding.bottom, minSize.y);
         }
 
+        // Debug colours
+        if(developer > 2) {
+            int start = random(0, 100);
+            for(int i = 0; i < managedViews.size(); i++) {
+                managedViews[i].backgroundColor = DEBUG_COLORS[(start + i) % DEBUG_COLORS.size()];
+            }
+        }
+
         requiresLayout = false;
         layingOutSubviews = false;
     }
@@ -177,9 +183,14 @@ class UIHorizontalLayout : UIViewManager {
 
     override void layoutChildChanged(UIView subview) {
         if(layingOutSubviews) return;
-
+        
         // For now just layout();
-        layout();
+        if(parent && parent.layoutWithChildren) {
+            parent.layoutChildChanged(self);
+        } else {
+            layout();
+        }
+
         // TODO: Add more intelligent layout
     }
 

@@ -84,8 +84,6 @@ class UIVerticalLayout : UIViewManager {
 
                 // We skipped subviews before so lay them out now
                 managed.layoutSubviews();
-
-                if(developer > 1) managed.backgroundColor = Color(255, random(0, 255), random(127, 255), random(0, 255));
             }
         } else if(layoutMode == Content_SizeParent) {
             // Briefly fudge our height so auto sizing views work
@@ -105,6 +103,14 @@ class UIVerticalLayout : UIViewManager {
             for(int i = 0; i < managedViews.size(); i++) {
                 managedViews[i].layout(cScale, cAlpha);
                 managedViews[i].frame.pos.x += padding.left;
+            }
+        }
+
+        // Debug colours
+        if(developer > 2) {
+            int start = random(0, 100);
+            for(int i = 0; i < managedViews.size(); i++) {
+                managedViews[i].backgroundColor = DEBUG_COLORS[(start + i) % DEBUG_COLORS.size()];
             }
         }
 
