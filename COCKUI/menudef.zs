@@ -10,6 +10,19 @@ class UIDefMenu : UIMenu {
         //calcScale(Screen.GetWidth(), Screen.GetHeight());
         self.desc = desc;
 
+        loadViews();
+
+        return self;
+    }
+
+
+    virtual void reloadViews() {
+        mainView.removeAll();
+        loadViews();
+    }
+
+    virtual void loadViews() {
+        // Read views from menudef and create them
         if(desc) {
             //items.append(desc.mItems);
 
@@ -59,7 +72,7 @@ class UIDefMenu : UIMenu {
                     } else {
                         curLayout = null;
                     }
-                }else {
+                } else {
                     UIView v = createItemView(i);
                     if(v) {
                         // Apply pins
@@ -116,41 +129,9 @@ class UIDefMenu : UIMenu {
                 firstControl.navUp = lastControl;
             }
         }
-
-        return self;
     }
 
     virtual UIView createItemView(ListMenuItem i) {
-        /*if(i is "ListMenuItemTextButton") {
-            let ib = ListMenuItemTextButton(i);
-            let v = new("UIButton").init(
-                ib.pos, (300, 40),
-                ib.text, ib.fnt,
-                UIButtonState.Create("", ib.color),
-                UIButtonState.Create("", ib.colorSelected),
-                UIButtonState.Create("", ib.colorSelected),
-                textAlign: ib.align
-            );
-            v.setTextPadding(0, ib.yPadTop, 0, ib.yPadBottom);
-            if(v.label) v.label.fontScale = ib.textScale;
-            if(!v.heightPin) v.pinHeight(UIView.Size_Min);
-            return v;
-        }
-
-        if(i is "ListMenuItemLabel") {
-            let il = ListMenuItemLabel(i);
-            let v = new("UILabel").init(
-                il.pos, (300, 40),
-                il.text, il.fnt,
-                il.color,
-                textAlign: il.align,
-                fontScale: il.textScale
-            );
-
-            if(!v.heightPin) v.pinHeight(UIView.Size_Min);
-            return v;
-        }*/
-
         if(i is 'UIListMenuItem') {
             return UIListMenuItem(i).buildView();
         }
@@ -184,42 +165,39 @@ class UIDefMenu : UIMenu {
 }
 
 
+// This is just a hack to let us replace MainMenu with something else
 class UIDefListMenu : Listmenu {
-    UIDefMenu umen;
     Menu parentMenu;
     ListMenuDescriptor mDesc2;
-    int oneTick;
 
     override void init(Menu parent, ListMenuDescriptor desc) {
 		Super.Init(parent, new("ListMenuDescriptor"));
         DontDim = true;
         DontBlur = true;
+
         // This class won't get used, since it's not a UIMenu, we will just replace ourselves with a UIMenu
-        //
         mDesc2 = desc;
         parentMenu = parent;
     }
 
     override void ticker() {
-        //if(oneTick == 1) {
-            close();
+        close();
 
-            class<UIDefMenu> cls = "UIDefMenu";
-
-            // Find the subclass if it exists, must be the first item in the list
-            if(mDesc2.mItems.size() > 0 && mDesc2.mItems[0] is "ListMenuItemSubClass") {
-                cls = (class<UIDefMenu>)(ListMenuItemSubClass(mDesc2.mItems[0]).mSubclass);
+        // Find the subclass if it exists, must be the first item in the list
+        if(mDesc2.mItems.size() > 0 && mDesc2.mItems[0] is "ListMenuItemSubClass") {
+            class<UIDefMenu> cls = (class<UIDefMenu>)(ListMenuItemSubClass(mDesc2.mItems[0]).mSubclass);
+            if(cls) {
+                UIDefMenu umen = UIDefMenu(new(cls));
+                umen.init(parentMenu, mDesc2);
+                umen.ActivateMenu();
+            } else {
+                // This wasn't a ListMenu, assume it's at least a UIMenu
+                class<UIMenu> cls = (class<UIMenu>)(ListMenuItemSubClass(mDesc2.mItems[0]).mSubclass);
+                UIMenu umen = UIMenu(new(cls));
+                umen.init(parentMenu);
+                umen.ActivateMenu();
             }
-
-            if(cls == null) {
-                cls = "UIDefMenu";
-                Console.Printf("Defaulting to UIDEFMENU");
-            } 
-            umen = UIDefMenu(new(cls));
-            umen.init(parentMenu, mDesc2);
-            umen.ActivateMenu();
-        //}
-        //oneTick++;
+        }
     }
 
     override bool OnUIEvent(UIEvent ev) { return true; }
