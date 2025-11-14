@@ -292,7 +292,7 @@ class UIButton : UIControl {
 
             if(state.backgroundColor != 0 && !state.tex.isValid() && state.slices == null) {
                 backgroundColor = state.backgroundColor;
-            } else if(state.tex.isValid() || state.slices != null) {
+            } else if((state.tex && state.tex.isValid()) || state.slices != null) {
                 backgroundColor = 0;
             }
 

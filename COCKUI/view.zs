@@ -965,6 +965,12 @@ class UIView ui {
         }
     }
 
+    virtual void removeAll() {
+        while(subviews.size() > 0) {
+            removeViewAt(subviews.size() - 1);
+        }
+    }
+
     virtual void removeViewAt(int index) {
         UIView v = subviews[index];
         subviews.delete(index);
@@ -976,7 +982,6 @@ class UIView ui {
 
         v.parent = null;
         v.parentMenu = null;
-        // TODO: We might need an onRemoveFromParent() function but as of yet it is not required
 
         v.onRemoved(self);
     }
