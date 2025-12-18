@@ -181,6 +181,9 @@ mixin class DeserializeHelper {
     }
 
     static int parseColor(String str) {
+        if(str ~== "untranslated") {
+            return Font.CR_UNTRANSLATED;
+        }
         return str.toint(0);
     }
 }
