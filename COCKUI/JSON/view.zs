@@ -146,6 +146,22 @@ extend class UIView {
             }
         }
 
+
+        // Deserialize extra info for existing subviews, IE if we are overriding template objects
+        JsonObject j_modviews = JsonObject(obj.get("modify"));
+        if(j_modviews) {
+            foreach(key, j_subview : j_modviews.data) {
+                // Find the view by key, and deserialize into it if exists
+                UIView subview = findViewById(key);
+                if(subview) {
+                    deserializeOptionalView(j_modviews, key, subview.getClass(), subview, templates);
+                } else {
+                    Console.Printf("\c[YELLOW]UIView: Failed to modify subview (%s) from object %s [id: %s]", key, self.getClassName(), id);
+                }
+            }
+        }
+
+
         // Deserialize mask
         JsonObject j_mask = JsonObject(obj.get("mask"));
         if(j_mask) {
