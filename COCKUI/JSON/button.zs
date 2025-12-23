@@ -205,6 +205,10 @@ extend class UIButtonState {
             }
         }
 
+        if(!tex) {
+            tex = new("UITexture");
+        }
+
         // Blend Color
         string col;
         if(getOptionalString(obj, "blendColor", col)) blendColor = parseColor(col);
