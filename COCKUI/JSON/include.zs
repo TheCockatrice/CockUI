@@ -7,3 +7,4 @@
 #include "./vertical_layout.zs"
 #include "./vertical_scroll.zs"
 #include "./slider.zs"
+#include "./input_text.zs"

@@ -48,6 +48,83 @@ class UIInputText : UIControl {
         return self;
     }
 
+    override UIView baseInit() {
+        Super.baseInit();
+
+        inputFont = "BIGFONT";
+        cancelsHoverDeSelect = true;
+        cancelsSubviewRaycast = true;
+
+        return self;
+    }
+
+    override void applyTemplate(UIView template) {
+        Super.applyTemplate(template);
+        UIInputText t = UIInputText(template);
+
+        if(t) {
+            textPadding.left = t.textPadding.left;
+            textPadding.right = t.textPadding.right;
+            textPadding.top = t.textPadding.top;
+            textPadding.bottom = t.textPadding.bottom;
+            mouseInside = false;
+            textPins[0] = textPins[1] = textPins[2] = textPins[3] = null;
+
+            requireValue = t.requireValue;
+            numeric = t.numeric;
+            allowDecimal = t.allowDecimal;
+            charLimit = t.charLimit;
+            inputFont = t.inputFont;
+            editing = false;
+            if(t.oskTemplate) {
+                oskTemplate = t.oskTemplate;
+            }
+            
+            // We don't copy the callback functions
+            //receiver = null;
+
+            // If the template had a label we find the copy in the new hierarchy
+            if(t.label) {
+                // Find the position in the subviews
+                int idx = t.indexOf(t.label);
+                if(idx >= 0) {
+                    label = UILabel(subviews[idx]);
+                    if(label) {
+                        // Copy the pins from the template
+                        textPins[0] = label.firstPin(UIPin.Pin_Left);
+                        textPins[1] = label.firstPin(UIPin.Pin_Top);
+                        textPins[2] = label.firstPin(UIPin.Pin_Right);
+                        textPins[3] = label.firstPin(UIPin.Pin_Bottom);
+                    } else {
+                        Console.Printf("\c[RED]UIInputText: Failed to recreate UILabel in subviews of UIInputText template '%s'", template.getClassName());
+                    }
+                } else {
+                    Console.Printf("\c[RED]UIInputText: Failed to find UILabel in subviews of UIInputText template '%s'", template.getClassName());
+                }
+            }
+
+            // Find and assign background images and such
+            if(t.background) {
+                int idx = t.indexOf(t.background);
+                if(idx >= 0) {
+                    background = UIImage(subviews[idx]);
+                } else {
+                    Console.Printf("\c[RED]UIInputText: Failed to find background UIImage in subviews of UIInputText template '%s'", template.getClassName());
+                }
+            }
+
+            if(t.highlight) {
+                int idx = t.indexOf(t.highlight);
+                if(idx >= 0) {
+                    highlight = UIImage(subviews[idx]);
+                } else {
+                    Console.Printf("\c[RED]UIInputText: Failed to find highlight UIImage in subviews of UIInputText template '%s'", template.getClassName());
+                }
+            }
+        }
+    }
+
+
     int getCursorPos() {
         return label.getCursorPos();
     }
