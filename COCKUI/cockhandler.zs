@@ -1,3 +1,11 @@
+// Container class for CockBar for receiving events from CockHandler
+class CockBarContainer : BaseStatusBar {
+    virtual void handleInterfaceEvent(ConsoleEvent e) {
+        // Do nothing by default
+    }
+}
+
+
 class CockHandler : StaticEventHandler {
     ui Map<Name, UIView> templateViews;
     ui bool hasLoadedTemplates;
@@ -39,6 +47,11 @@ class CockHandler : StaticEventHandler {
         UIMenu men = UIMenu(Menu.GetCurrentMenu());
         if(men) {
             men.handleInterfaceEvent(e);
+        }
+        
+        let barcock = CockBarContainer(StatusBar);
+        if(barcock) {
+            barcock.handleInterfaceEvent(e);
         }
     }
 
