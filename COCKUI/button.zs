@@ -561,47 +561,51 @@ class UIButton : UIControl {
         }
     }
 
-    override void onMouseUp(Vector2 screenPos) {
+    override void onMouseUp(Vector2 screenPos, ViewEvent ev, int button) {
         if(disabled) { return; }
 
-        if(mouseInside) {
-            // Transition to state first, in case the handler changes our state manually
-            transitionToState(selected ? State_SelectedHover : State_Hover, sound: false);
+        if(button == Mouse_LeftButton) {
+            if(mouseInside) {
+                // Transition to state first, in case the handler changes our state manually
+                transitionToState(selected ? State_SelectedHover : State_Hover, sound: false);
 
-            // This is a full button press!
-            if(!activateOnDownEvent) {
-                if(onUp == null || !onUp.call(receiver, self, true, false)) {
-                    if(onClick == null || !onClick.call(receiver, self, true, false)) 
-                        sendEvent(UIHandler.Event_Activated, true);
-                    else return;    // Don't send double click event if we consumed the click
+                // This is a full button press!
+                if(!activateOnDownEvent) {
+                    if(onUp == null || !onUp.call(receiver, self, true, false)) {
+                        if(onClick == null || !onClick.call(receiver, self, true, false)) 
+                            sendEvent(UIHandler.Event_Activated, true);
+                        else return;    // Don't send double click event if we consumed the click
+                    }
                 }
-            }
 
-            if(doubleClickEnabled && doubleClickCounter > 0 && doubleClickCounter < DOUBLE_CLICK_MAX_TICKS) {
-                sendEvent(UIHandler.Event_Alternate_Activate, true);
-            } else if(doubleClickEnabled && doubleClickCounter == 0) {
-                doubleClickCounter = 1;
-            } else if(doubleClickEnabled && doubleClickCounter >= DOUBLE_CLICK_MAX_TICKS) {
-                doubleClickCounter = 1;
+                if(doubleClickEnabled && doubleClickCounter > 0 && doubleClickCounter < DOUBLE_CLICK_MAX_TICKS) {
+                    sendEvent(UIHandler.Event_Alternate_Activate, true);
+                } else if(doubleClickEnabled && doubleClickCounter == 0) {
+                    doubleClickCounter = 1;
+                } else if(doubleClickEnabled && doubleClickCounter >= DOUBLE_CLICK_MAX_TICKS) {
+                    doubleClickCounter = 1;
+                }
+                
+            } else {
+                doubleClickCounter = -1;
+                transitionToState(selected ? State_Selected : State_Normal, mouseSelection: true);
             }
-            
-        } else {
-            doubleClickCounter = -1;
-            transitionToState(selected ? State_Selected : State_Normal, mouseSelection: true);
         }
     }
 
-    override void onMouseDown(Vector2 screenPos) {
-        mouseInside = true;
-        if(!disabled) {
-            transitionToState(selected ? State_SelectedPressed : State_Pressed, mouseSelection: true);
-            
-            if(doubleClickEnabled) {
-                doubleClickCounter++;
-            } else if(activateOnDownEvent) {
-                if(onDown == null || !onDown.call(receiver, self, true, false)) {
-                    if(onClick == null || !onClick.call(receiver, self, true, false)) 
-                        sendEvent(UIHandler.Event_Activated, true);
+    override void onMouseDown(Vector2 screenPos, ViewEvent ev, int button) {
+        if(button == Mouse_LeftButton) {
+            mouseInside = true;
+            if(!disabled) {
+                transitionToState(selected ? State_SelectedPressed : State_Pressed, mouseSelection: true);
+                
+                if(doubleClickEnabled) {
+                    doubleClickCounter++;
+                } else if(activateOnDownEvent) {
+                    if(onDown == null || !onDown.call(receiver, self, true, false)) {
+                        if(onClick == null || !onClick.call(receiver, self, true, false)) 
+                            sendEvent(UIHandler.Event_Activated, true);
+                    }
                 }
             }
         }

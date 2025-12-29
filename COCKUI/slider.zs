@@ -16,10 +16,10 @@ class UISliderButton : UIButton {
         return self;
     }
 
-    override void onMouseDown(Vector2 screenPos) {
-        Super.onMouseDown(screenPos);
+    override void onMouseDown(Vector2 screenPos, ViewEvent ev, int button) {
+        Super.onMouseDown(screenPos, ev, button);
 
-        if(disabled) { return; }
+        if(disabled || button != Mouse_LeftButton) { return; }
 
         lastMousePos = screenPos;
         holding = true;
@@ -28,10 +28,12 @@ class UISliderButton : UIButton {
         if(m) m.startDragging(self);
     }
 
-    override void onMouseUp(Vector2 screenPos) {
+    override void onMouseUp(Vector2 screenPos, ViewEvent ev, int button) {
         if(holding) mouseInside = raycastTest(screenPos);
 
-        Super.onMouseUp(screenPos);
+        Super.onMouseUp(screenPos, ev, button);
+
+        if(button != Mouse_LeftButton) { return; }
 
         lastMousePos = screenPos;
         holding = false;
@@ -405,10 +407,10 @@ class UISlider : UIControl {
         layoutButton();
     }
 
-    override void onMouseDown(Vector2 screenPos) {
-        Super.onMouseDown(screenPos);
+    override void onMouseDown(Vector2 screenPos, ViewEvent ev, int button) {
+        Super.onMouseDown(screenPos, ev, button);
 
-        if(disabled) { return; }
+        if(disabled || button != Mouse_LeftButton) { return; }
 
         // Move the slider to the relative pos
         Vector2 apos = screenToRel(screenPos);

@@ -325,18 +325,20 @@ class UIDropdown : UIButton {
         return dropScroll.parent != null;
     }
 
-    override void onMouseUp(Vector2 screenPos) {
-        Super.onMouseUp(screenPos);
+    override void onMouseUp(Vector2 screenPos, ViewEvent ev, int button) {
+        Super.onMouseUp(screenPos, ev, button);
 
-        if(mouseInside && !wasOpenBeforeClick) {
-            if(!isOpen()) {
-                open();
+        if(button == Mouse_LeftButton) {
+            if(mouseInside && !wasOpenBeforeClick) {
+                if(!isOpen()) {
+                    open();
+                }
+            } else {
+                close();
             }
-        } else {
-            close();
-        }
 
-        wasOpenBeforeClick = false;
+            wasOpenBeforeClick = false;
+        }
     }
 
     override bool event(ViewEvent ev) {

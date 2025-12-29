@@ -113,36 +113,40 @@ class UIWindow : UIControl {
     }
 
 
-    override void onMouseDown(Vector2 screenPos) {
-        // TODO: Move window to top if specified
-        Vector2 localPos = screenToRel(screenPos);
-        if(topDragArea.pointInside(localPos)) {
-            isDragging = true;
-            absDrag = frame.pos;
+    override void onMouseDown(Vector2 screenPos, ViewEvent ev, int button) {
+        if(button == Mouse_LeftButton) { 
+            // TODO: Move window to top if specified
+            Vector2 localPos = screenToRel(screenPos);
+            if(topDragArea.pointInside(localPos)) {
+                isDragging = true;
+                absDrag = frame.pos;
+                for(int x = 0; x < 3; x++) {
+                    isSizing[x] = false;
+                }
+            } else if(sizerWidth > 0) {
+                absSizer = frame.size;
+                for(int x = 0; x < 3; x++) {
+                    isSizing[x] = resizeAreas[x].pointInside(localPos);
+                }
+            }
+        }
+
+        Super.onMouseDown(screenPos, ev, button);
+    }
+
+    override void onMouseUp(Vector2 screenPos, ViewEvent ev, int button) {
+        if(button == Mouse_LeftButton) { 
+            isDragging = false;
             for(int x = 0; x < 3; x++) {
                 isSizing[x] = false;
             }
-        } else if(sizerWidth > 0) {
-            absSizer = frame.size;
-            for(int x = 0; x < 3; x++) {
-                isSizing[x] = resizeAreas[x].pointInside(localPos);
-            }
+
+            // We may have resized and need to rebuild our hotzones
+            // TODO: Only rebuild sizers when coming out of a size op
+            BuildSizers();
         }
 
-        Super.onMouseDown(screenPos);
-    }
-
-    override void onMouseUp(Vector2 screenPos) {
-        isDragging = false;
-        for(int x = 0; x < 3; x++) {
-            isSizing[x] = false;
-        }
-
-        // We may have resized and need to rebuild our hotzones
-        // TODO: Only rebuild sizers when coming out of a size op
-        BuildSizers();
-        
-        Super.onMouseUp(screenPos);
+        Super.onMouseUp(screenPos, ev, button);
     }
 
     virtual void onManualResize() {}

@@ -530,8 +530,8 @@ class UIView ui {
         return true;
     }
 
-    virtual void onMouseDown(Vector2 screenPos, ViewEvent ev = null) { }
-    virtual void onMouseUp(Vector2 screenPos, ViewEvent  ev = null) { }
+    virtual void onMouseDown(Vector2 screenPos, ViewEvent ev = null, int button = 0) { }
+    virtual void onMouseUp(Vector2 screenPos, ViewEvent  ev = null, int button = 0) { }
     virtual void onMouseEnter(Vector2 screenPos) { }
     virtual void onMouseExit(Vector2 screenPos, UIView newView) { }
 

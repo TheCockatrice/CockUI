@@ -8,6 +8,17 @@ class ViewFunctionList ui {
 	String name;
 }
 
+
+enum MouseButton {
+	Mouse_LeftButton 	= 0,
+	Mouse_RightButton 	= 1,
+	Mouse_MiddleButton	= 2,
+	Mouse_BackButton	= 3,
+	Mouse_ForwardButton	= 4,
+	Mouse_ButtonCount	= 5
+}
+
+
 class UIMenu : GenericMenu {
 	mixin ScreenSizeChecker;
 	mixin CVARBuddy;
@@ -29,10 +40,10 @@ class UIMenu : GenericMenu {
 	double lastUIScale;
 
 	// Last element that was mouse-downed or hovered
-	UIView mDownView, mHoverView;
+	UIView mDownView[Mouse_ButtonCount], mHoverView;
 	UIControl activeControl, lastActiveControl;
 	UIRecycler recycler;
-	bool mouseDown, lastEventWasMouse, hasLayedOutOnce;
+	bool mouseDown[Mouse_ButtonCount], lastEventWasMouse, hasLayedOutOnce;
 	
 	int mouseCounter, controlCounter, keyboardCounter;			// Used to determine wether the user is primarily using mouse or keyboard
 
@@ -50,6 +61,8 @@ class UIMenu : GenericMenu {
 	Map<String, Function<ui bool(UIMenu, int, int, int, bool)> > interfaceCallbacks;
 	Map<String, ViewFunctionList> viewInterfaceCallbacks;
 	
+	ViewEvent cachedVE;
+
 
 	void registerInterfaceCallback(string name, Function<ui bool(UIMenu, int, int, int, bool)> callback) {
 		interfaceCallbacks.insert(name, callback);
@@ -313,6 +326,30 @@ class UIMenu : GenericMenu {
 		return false;
 	}
 
+
+	int mouseButtonFromType(int uitype) {
+		switch(uitype) {
+			case UIEvent.Type_LButtonDown:
+			case UIEvent.Type_LButtonUp:
+				return Mouse_LeftButton;
+			case UIEvent.Type_RButtonDown:
+			case UIEvent.Type_RButtonUp:
+				return Mouse_RightButton;
+			case UIEvent.Type_MButtonDown:
+			case UIEvent.Type_MButtonUp:
+				return Mouse_MiddleButton;
+			case UIEvent.Type_BackButtonDown:
+			case UIEvent.Type_BackButtonUp:
+				return Mouse_BackButton;
+			case UIEvent.Type_FwdButtonDown:
+			case UIEvent.Type_FwdButtonUp:
+				return Mouse_ForwardButton;
+			default:
+				return 0;
+		}
+	}
+
+
 	override bool onUIEvent(UIEvent ev) {
 		if(!mainView) return false;
 
@@ -325,7 +362,11 @@ class UIMenu : GenericMenu {
 			mouseY = ev.mouseY;
 		}
 
-		let veev = new("ViewEvent");
+		if(!cachedVE) {
+			cachedVE = new("ViewEvent");
+		}
+
+		let veev = cachedVE;
 		ViewEvent.fromGZDUiEvent(ev, veev);
 
 		// Inject mouse pos into mouse wheel events
@@ -341,17 +382,25 @@ class UIMenu : GenericMenu {
 		Vector2 mousePos = (veev.mouseX, veev.mouseY);
 		switch(ev.type) {
 			case UIEvent.Type_LButtonDown:
+			case UIEvent.Type_RButtonDown:
+			case UIEvent.Type_MButtonDown:
+			case UIEvent.Type_BackButtonDown:
+			case UIEvent.Type_FwdButtonDown:
 				mouseX = ev.mouseX;
 				mouseY = ev.mouseY;
 				mouseCaptureBeforeMDOWN = mMouseCapture; 
 				SetCapture(true);
-				if(mouseDownEvent(veev)) return true;
+				if(mouseDownEvent(veev, mouseButtonFromType(ev.type))) return true;
 				break;
 			case UIEvent.Type_LButtonUp:
+			case UIEvent.Type_RButtonUp:
+			case UIEvent.Type_MButtonUp:
+			case UIEvent.Type_BackButtonUp:
+			case UIEvent.Type_FwdButtonUp:
 				mouseX = ev.mouseX;
 				mouseY = ev.mouseY;
 				SetCapture(mouseCaptureBeforeMDOWN);
-				if(mouseUpEvent(veev)) return true;
+				if(mouseUpEvent(veev, mouseButtonFromType(ev.type))) return true;
 				break;
 			case UIEvent.Type_MouseMove:
 				if(mouseHasMovedEnough) mouseMoveEvent(veev);
@@ -374,37 +423,37 @@ class UIMenu : GenericMenu {
 		return Super.onUIEvent(ev);
 	}
 
-	virtual bool mouseDownEvent(ViewEvent ev) {
+	virtual bool mouseDownEvent(ViewEvent ev, int button = 0) {
 		if(mouseMovementShowsCursor) showCursor();
 
-		mouseDown = true;
+		mouseDown[button] = true;
 		mouseCounter++;
 		lastEventWasMouse = true;
 
 		// Find front most object and call to it
 		Vector2 mousePos = (ev.mouseX, ev.mouseY);
 		UIView v = mainView.raycastPoint(mousePos);
-		mDownView = v;
+		mDownView[button] = v;
 		if(v) {
 			if(ev.IsCtrl && ev.IsShift && developer) {
-				Console.Printf("View Hit: %s At: X(%f)  Y(%f)", v.getClassName(), mousePos.x, mousePos.y);
+				Console.Printf("Button: %d View Hit: %s At: X(%f)  Y(%f)", button, v.getClassName(), mousePos.x, mousePos.y);
 			}
-			v.onMouseDown(mousePos, ev);
+			v.onMouseDown(mousePos, ev, button);
 			return true;
 		}
 
 		return false;
 	}
 
-	virtual bool mouseUpEvent(ViewEvent ev) {
+	virtual bool mouseUpEvent(ViewEvent ev, int button = 0) {
 		if(mouseMovementShowsCursor) showCursor();
 		lastEventWasMouse = true;
-		mouseDown = false;
+		mouseDown[button] = false;
 
 		// If we are dragging, the drag object gets the mouse up event
 		if(dragControl) {
 			Vector2 mousePos = (ev.mouseX, ev.mouseY);
-			dragControl.onMouseUp(mousePos, ev);
+			dragControl.onMouseUp(mousePos, ev, button);
 
 			// If we are still global dragging, this is where it ends
 			if(dragControl && globalDragging) {
@@ -418,10 +467,10 @@ class UIMenu : GenericMenu {
 		}
 
 		// Call mouse up on the previously selected Down view
-		if(mDownView) {
+		if(mDownView[button]) {
 			Vector2 mousePos = (ev.mouseX, ev.mouseY);
-			mDownView.onMouseUp(mousePos, ev);
-			mDownView = null;
+			mDownView[button].onMouseUp(mousePos, ev, button);
+			mDownView[button] = null;
 			return true;
 		}
 
@@ -778,10 +827,12 @@ class UIMenu : GenericMenu {
 			mHoverView = null;
 		}
 
-		if(v == mDownView) {
-			mDownView = null;
+		for(int x = 0; x < Mouse_ButtonCount; x++) {
+			if(v == mDownView[x]) {
+				mDownView[x] = null;
+			}
 		}
-
+		
 		if(UIControl(v) == activeControl) {
 			activeControl = null;
 		}

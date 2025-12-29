@@ -432,28 +432,32 @@ class UIInputText : UIControl {
         if(!mouseDown) mouseInside = false;
     }
 
-    override void onMouseUp(Vector2 screenPos) {
-        mouseInside = false;
-        mouseDown = false;
+    override void onMouseUp(Vector2 screenPos, ViewEvent ev, int button) {
+        if(button == Mouse_LeftButton) {
+            mouseInside = false;
+            mouseDown = false;
+        }
         
-        Super.onMouseUp(screenPos);
+        Super.onMouseUp(screenPos, ev, button);
     }
 
-    override void onMouseDown(Vector2 screenPos) {
-        mouseInside = true;
-        mouseDown = true;
+    override void onMouseDown(Vector2 screenPos, ViewEvent ev, int button) {
+        if(button == Mouse_LeftButton) {
+            mouseInside = true;
+            mouseDown = true;
 
-        // If we are already editing, move selection to mouse down location
-        if(!disabled && textEnterMenu) {
-            Vector2 localCoord = label.screenToRel(screenPos);
-            int newPos = label.cursorPosFromLocal(localCoord);
+            // If we are already editing, move selection to mouse down location
+            if(!disabled && textEnterMenu) {
+                Vector2 localCoord = label.screenToRel(screenPos);
+                int newPos = label.cursorPosFromLocal(localCoord);
 
-            if(newPos >= 0) setCursorPos(newPos);
-        } else if(!disabled) {
-            onActivate(true, false);
+                if(newPos >= 0) setCursorPos(newPos);
+            } else if(!disabled) {
+                onActivate(true, false);
+            }
         }
 
-        Super.onMouseDown(screenPos);
+        Super.onMouseDown(screenPos, ev, button);
     }
 
     override bool event(ViewEvent ev) {
