@@ -18,6 +18,15 @@ class UIAnimatedLabel : UILabel {
         animCharLimit = 0;
     }
 
+    override UIView baseInit() {
+        Super.baseInit();
+
+        absCharLimit = -1;
+        animStart = -1;
+
+        return self;
+    }
+
     void end() {
         charLimit = -1;
         animStart = -1;
