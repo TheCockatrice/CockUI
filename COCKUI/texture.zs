@@ -143,11 +143,12 @@ class NineSlice {
 		Vector2 brs = size - scaleVec(imageSize - brpix, scale);
 
 		Vector2 hpos[] = {
-			(0, 0), 	(tls.x, 0), 	(brs.x, 0), 	(right, 0),			// Top Row
-			(0, tls.y), (tls.x, tls.y), (brs.x, tls.y),	(right, tls.y),		// Upper Row
-			(0, brs.y), (tls.x, brs.y),	(brs.x, brs.y), (right, brs.y),		// Lower Row
-			(0, bottom),(tls.x, bottom),(brs.x, bottom),(right, bottom)		// Bottom Row
+			pos + (0, 0), 		pos + (tls.x, 0), 		pos + (brs.x, 0), 		pos + (right, 0),			// Top Row
+			pos + (0, tls.y), 	pos + (tls.x, tls.y), 	pos + (brs.x, tls.y),	pos + (right, tls.y),		// Upper Row
+			pos + (0, brs.y), 	pos + (tls.x, brs.y),	pos + (brs.x, brs.y), 	pos + (right, brs.y),		// Lower Row
+			pos + (0, bottom),	pos + (tls.x, bottom),  pos + (brs.x, bottom),	pos + (right, bottom)		// Bottom Row
 		};
+		
 
 		// Start with corners because they don't require tiling
 		Shape2DHelper.AddQuadRaw(shape, hpos[0], hpos[5], uv[0], uv[5], pointCount);	// Top Left
