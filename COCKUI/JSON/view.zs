@@ -49,6 +49,7 @@ extend class UIView {
         getOptionalDouble(obj, "angle", angle);
         getOptionalBool(obj, "hidden", hidden);
         getOptionalBool(obj, "clipsSubviews", clipsSubviews);
+        getOptionalBool(obj, "raycastTarget", raycastTarget);
         getOptionalBool(obj, "cancelsSubviewRaycast", cancelsSubviewRaycast);
         getOptionalBool(obj, "ignoresClipping", ignoresClipping);
         getOptionalBool(obj, "layoutWithChildren", layoutWithChildren);
