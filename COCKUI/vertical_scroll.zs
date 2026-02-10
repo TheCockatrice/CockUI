@@ -300,6 +300,13 @@ class UIVerticalScroll : UIControl {
         updateScrollbar(scrollbar.getNormalizedValue());
     }
 
+
+    void stopScrolling() {
+        targetScroll = -1;
+        scrollStart = 0;
+    }
+
+
     virtual void scrollNormalized(double val, bool animated = false, bool sendEvt = true, bool fromMouse = true, int animateTicks = scrollTicks) {
         if(requiresLayout) {
             layout();
@@ -321,6 +328,7 @@ class UIVerticalScroll : UIControl {
             sendEvent(UIHandler.Event_ValueChanged, fromMouse);
         }
     }
+
 
     virtual void scrollBy(double offset, bool animated = false, bool sendEvt = true, bool fromMouse = true, int animateTicks = scrollTicks) {
         if(requiresLayout) {
