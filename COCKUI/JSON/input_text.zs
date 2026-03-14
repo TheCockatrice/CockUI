@@ -57,13 +57,7 @@ extend class UIInputText {
 
         // Rest of label properties
         // Font scale
-        double fScale = 1.0;
-        if(getOptionalDouble(obj, "fontScale", fScale)) {
-            if(fScale <= 0.0) {
-                ThrowAbortException("UIInputText: Invalid font scale '%f' for input with text '%s' in object %s", fScale, text, obj.getClassName());
-            }
-            label.fontScale = (fScale,fScale);
-        }
+        ParseScale(obj.get("fontScale"), label.fontScale);
 
         getOptionalDouble(obj, "fontScaleX", label.fontScale.x);
         getOptionalDouble(obj, "fontScaleY", label.fontScale.y);

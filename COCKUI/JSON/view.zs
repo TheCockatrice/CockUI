@@ -270,6 +270,40 @@ extend class UIView {
 
         return false;
     }
+
+
+    static bool ParseScale(JsonElement j, out Vector2 scale) {
+        if(!j) return false;
+
+        let num = JsonNumber(j);
+        if(num) {
+            scale = (num.asDouble(), num.asDouble());
+            return true;
+        }
+
+        let j_arr = JsonArray(j);
+        if(j_arr) {
+            let x = JsonNumber(j_arr.arr[0]);
+            let y = JsonNumber(j_arr.arr[1]);
+
+            if(x) scale.x = x.asDouble();
+            if(y) scale.y = y.asDouble();
+
+            return true;
+        }
+
+        let j_obj = JsonObject(j);
+        if(j_obj) {
+            getOptionalDouble(j_obj, "x", scale.x);
+            getOptionalDouble(j_obj, "y", scale.y);
+            return true;
+        }
+
+        Console.Printf("\c[RED]UIView: Expected a Number, JsonArray or JsonObject for scale, got a %s", j.getClassName());
+
+        return false;
+    }
+
     
     void buildFromJson(JsonObject obj) {
         if(!obj) ThrowAbortException("UIView: Expected a JsonObject, got null");

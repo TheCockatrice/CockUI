@@ -22,13 +22,7 @@ extend class UILabel {
         getOptionalint(obj, "verticalSpacing", verticalSpacing);
         
         // Font scale
-        double fScale = 1.0;
-        if(getOptionalDouble(obj, "fontScale", fScale)) {
-            if(fScale <= 0.0) {
-                ThrowAbortException("UILabel: Invalid font scale '%f' for label with text '%s' in object %s", fScale, text, obj.getClassName());
-            }
-            fontScale = (fScale,fScale);
-        }
+        ParseScale(obj.get("fontScale"), fontScale);
 
         getOptionalDouble(obj, "fontScaleX", fontScale.x);
         getOptionalDouble(obj, "fontScaleY", fontScale.y);
