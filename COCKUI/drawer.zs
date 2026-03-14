@@ -39,74 +39,114 @@ enum DrawFlags {
 const TICKRATE = double(35.0);
 const ITICKRATE = double(1.0/35.0);
 
-
+// Actor CVARBuddy, use on actors. User scoped cvars will be from the ConsolePlayer
 mixin class CVARBuddy {
     clearscope double fGetCVar(Name cv, double defValue = 0) {
-        let cva = CVar.FindCVar(cv);
+        let cva = CVar.GetCVar(cv, players[consolePlayer]);
 
         return cva ? cva.GetFloat() : defValue;
     }
     
-    
     clearscope int iGetCVar(Name cv, int defValue = 0) {
-        let cva = CVar.FindCVar(cv);
+        let cva = CVar.GetCVar(cv, players[consolePlayer]);
 
         return cva ? cva.GetInt() : defValue;
     }
 
     clearscope void iSetCVar(Name cv, int val) {
-        let cva = CVar.FindCVar(cv);
+        let cva = CVar.GetCVar(cv, players[consolePlayer]);
 
         if(cva) cva.setInt(val);
     }
 
     clearscope void fSetCVar(Name cv, double val) {
-        let cva = CVar.FindCVar(cv);
+        let cva = CVar.GetCVar(cv, players[consolePlayer]);
 
         if(cva) cva.setFloat(val);
     }
 }
 
 
-mixin class SCVARBuddy {
-    static double fGetCVar(Name cv, double defValue = 0) {
-        let cva = CVar.FindCVar(cv);
+// CVARBuddy for playerpawns or anything that has a player object
+mixin class PCVARBuddy {
+    clearscope double fGetCVar(Name cv, double defValue = 0) {
+        let cva = CVar.GetCVar(cv, self.player);
+
+        return cva ? cva.GetFloat() : defValue;
+    }
+    
+    clearscope int iGetCVar(Name cv, int defValue = 0) {
+        let cva = CVar.GetCVar(cv, self.player);
+
+        return cva ? cva.GetInt() : defValue;
+    }
+
+    clearscope void iSetCVar(Name cv, int val) {
+        let cva = CVar.GetCVar(cv, self.player);
+
+        if(cva) cva.setInt(val);
+    }
+
+    clearscope void fSetCVar(Name cv, double val) {
+        let cva = CVar.GetCVar(cv, self.player);
+
+        if(cva) cva.setFloat(val);
+    }
+}
+
+
+// Generic CVARBuddy, supply player ID (or not) for USER cvars
+mixin class ICVARBuddy {
+    clearscope double fGetCVar(Name cv, double defValue = 0, int playerNum = -1) {
+        let cva = CVar.GetCVar(cv, players[playerNum >= 0 ? playerNum : consolePlayer]);
 
         return cva ? cva.GetFloat() : defValue;
     }
     
     
-    static int iGetCVar(Name cv, int defValue = 0) {
-        let cva = CVar.FindCVar(cv);
+    clearscope int iGetCVar(Name cv, int defValue = 0, int playerNum = -1) {
+        let cva = CVar.GetCVar(cv, players[playerNum >= 0 ? playerNum : consolePlayer]);
 
         return cva ? cva.GetInt() : defValue;
     }
 
-    static void iSetCVar(Name cv, int val) {
-        let cva = CVar.FindCVar(cv);
+    clearscope void iSetCVar(Name cv, int val, int playerNum = -1) {
+        let cva = CVar.GetCVar(cv, players[playerNum >= 0 ? playerNum : consolePlayer]);
 
         if(cva) cva.setInt(val);
     }
 
-    static void fSetCVar(Name cv, double val) {
-        let cva = CVar.FindCVar(cv);
+    clearscope void fSetCVar(Name cv, double val, int playerNum = -1) {
+        let cva = CVar.GetCVar(cv, players[playerNum >= 0 ? playerNum : consolePlayer]);
 
         if(cva) cva.setFloat(val);
     }
 }
 
 
-mixin class HUDScaleReader {
-    transient CVar hudScaleCVAR;
+// Static CVARBuddy, use for event handlers and such
+mixin class SCVARBuddy {
+    static double fGetCVar(Name cv, double defValue = 0) {
+        let cva = CVar.GetCVar(cv, players[consolePlayer]);
+        return cva ? cva.GetFloat() : defValue;
+    }
+    
+    static int iGetCVar(Name cv, int defValue = 0) {
+        let cva = CVar.GetCVar(cv, players[consolePlayer]);
+        return cva ? cva.GetInt() : defValue;
+    }
 
-    float getHUDScale() {
-        if(!hudScaleCVAR) hudScaleCVAR = CVar.FindCVar("hud_scaling");
-        float hudScale = hudScaleCVAR.GetFloat();
-        if(hudScale < 0) hudScale = HUD_SCALING_DEFAULT;
+    static void iSetCVar(Name cv, int val) {
+        let cva = CVar.GetCVar(cv, players[consolePlayer]);
+        if(cva) cva.setInt(val);
+    }
 
-        return hudScale;
-    }    
+    static void fSetCVar(Name cv, double val) {
+        let cva = CVar.GetCVar(cv, players[consolePlayer]);
+        if(cva) cva.setFloat(val);
+    }
 }
+
 
 
 mixin class ScreenSizeChecker {
@@ -122,6 +162,8 @@ mixin class ScreenSizeChecker {
         return false;
     }
 }
+
+
 
 mixin class UIDrawer {
     transient ui Vector2 screenSize, virtualScreenSize, screenInsets;
