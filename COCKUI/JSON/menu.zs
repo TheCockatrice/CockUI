@@ -184,6 +184,12 @@ mixin class DeserializeHelper {
         if(str ~== "untranslated") {
             return Font.CR_UNTRANSLATED;
         }
+        
+        // Try to check for a string color name first
+        int namedColor = Font.FindFontColor(str);
+        if(namedColor != Font.CR_UNTRANSLATED) return namedColor;
+
+        // Assume string is in hex format if not a named color
         return str.toint(0);
     }
 }
