@@ -167,29 +167,9 @@ class UIMath {
         return a + t * (b - a);
     }
 
-    // Basic Lerp Angle (Thanks itsmrpeck)
+    // Basic Lerp Angle
     static double LerpA(double a, double b, double t) {
-        float result;
-        float diff = b - a;
-        if (diff < -180.0) {
-            b += 360;
-            result = a + t * (b - a);
-            if (result >= 360.0) {
-                result -= 360.0;
-            }
-        } else if (diff > 180.0) {
-            // lerp downwards past 0
-            b -= 360.0;
-            result = a + t * (b - a);
-            if (result < 0.0) {
-                result += 360.0;
-            }
-        } else {
-            // straight lerp
-            return a + t * (b - a);
-        }
-
-        return result;
+        return Actor.deltaAngle(a, b) * t + a;
     }
 
     static float rnd2d(float n, float m) {//random 2d gooed enough for mountains -1, 1
