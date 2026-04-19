@@ -166,6 +166,11 @@ class UIViewAnimation ui {
                 return tm;
         }
     }
+
+    void offsetTime(double offset) {
+        startTime += offset;
+        endTime += offset;
+    }
 }
 
 
@@ -610,5 +615,67 @@ class UIViewShakeAnimation : UIViewAnimation {
 
     void setInitialValues() {
         
+    }
+}
+
+
+// Animate the clipping bounds of a view, used for reveals or whatever
+// Either animate by strictly defined frame or by multiplier
+class UIViewClipAnimation : UIViewAnimation {
+    UIBox startClip, endClip, currentClip;
+    bool isFactor;  // Start and End clips are multipliers of the inherit clipping bounds instead of absolute values
+
+    UIViewClipAnimation init(UIView view, double length, in UIBox startClip, in UIBox endClip, int easing = Ease_None, bool isFactor = true, bool layoutSubviewsEveryFrame = false) {
+        Super.init(view, length, layoutSubviewsEveryFrame);
+        finishOnCancel = true;
+        
+        self.startClip.copy(startClip);
+        self.endClip.copy(endClip);
+        self.isFactor = isFactor;
+        self.easing = easing;
+
+        currentClip.copy(startClip);
+        
+        return self;
+    }
+    
+
+    void setFinalValues() {
+        view.clipFrame.copy(endClip);
+    }
+
+    override bool step(double time) {
+        // Don't animate until we hit our start time
+        if(!looping && startTime > time) {
+            return true;
+        }
+
+        if(!looping && !checkValid(time)) {
+            setFinalValues();
+            return false; 
+        }
+
+        double te = time - startTime;
+        double tm = ease(te / (endTime - startTime));
+        double item = 1.0 - tm;
+        
+        // Calculate the current clip by lerping between the start and end clips
+        currentClip.pos.x = UIMath.Lerpd(startClip.pos.x, endClip.pos.x, tm);
+        currentClip.pos.y = UIMath.Lerpd(startClip.pos.y, endClip.pos.y, tm);
+        currentClip.size.x = UIMath.Lerpd(startClip.size.x, endClip.size.x, tm);
+        currentClip.size.y = UIMath.Lerpd(startClip.size.y, endClip.size.y, tm);
+
+        // clipFrame is already a factor, so just copy it if we can
+        if(isFactor) {
+            view.clipFrame.copy(currentClip);
+        } else {
+            view.clipFrame.pos.x = currentClip.pos.x / view.frame.size.x;
+            view.clipFrame.pos.y = currentClip.pos.y / view.frame.size.y;
+            view.clipFrame.size.x = currentClip.size.x / view.frame.size.x;
+            view.clipFrame.size.y = currentClip.size.y / view.frame.size.y;
+        }
+        
+        Super.step(time);
+        return true;
     }
 }
