@@ -132,6 +132,8 @@ class UIView ui {
     bool layingOutSubviews;             // Used to prevent layout loops when laying out subviews
     double alpha, angle;
     Vector2 scale, rotCenter;
+    UIBox clipFrame;                    // Multiplier when calculating clip rect
+    bool clipSelf;                      // Clips own contents to bounds
 
     int cStencil;     // Calculated stencil level during draw, should be 0 at other times
     double cAlpha;    // Calculated alpha during Layout()
@@ -156,6 +158,8 @@ class UIView ui {
         frame.size = size;
         alpha = 1;
         scale = (1,1);
+        clipFrame.pos = (0,0);
+        clipFrame.size = (1,1);
         rotCenter = (0.5, 0.5);
         maxSize = (99999, 99999);
         clipsSubviews = true;
@@ -176,6 +180,8 @@ class UIView ui {
     virtual UIView baseInit() {
         alpha = 1;
         scale = (1,1);
+        clipFrame.pos = (0,0);
+        clipFrame.size = (1,1);
         rotCenter = (0.5, 0.5);
         maxSize = (99999, 99999);
         clipsSubviews = true;
@@ -194,6 +200,8 @@ class UIView ui {
         raycastTarget = template.raycastTarget;
         eventsEnabled = template.eventsEnabled;
         clipsSubviews = template.clipsSubviews;
+        clipFrame.pos = template.clipFrame.pos;
+        clipFrame.size = template.clipFrame.size;
         ignoresClipping = template.ignoresClipping;
         dragTarget = template.dragTarget;
         cancelsSubviewRaycast = template.cancelsSubviewRaycast;
@@ -402,15 +410,8 @@ class UIView ui {
         mask.draw();
         mask.drawSubviews();
 
-        /*Screen.DrawTexture(TexMan.CheckForTexture("WPNICON4"), false, 0, 0, 
-            DTA_DestWidth, Screen.GetWidth(),
-            DTA_DestHeight, Screen.GetHeight()
-        );*/
-
         // Set drawn stencil active
         Screen.SetStencil(cStencil, SOP_Keep, SF_AllOn);
-
-        Console.Printf("Drew mask at x: %f y: %f w: %f h: %f to stencil level %d", mask.frame.pos.x, mask.frame.pos.y, mask.frame.size.x, mask.frame.size.y, cStencil);
     }
 
     virtual void undrawMask() {
@@ -429,8 +430,6 @@ class UIView ui {
         Screen.Clear(0, 0, Screen.GetWidth(), Screen.GetHeight(), 0xFFFFFFFF);
         
         Screen.SetStencil(cStencil >> 1, SOP_Keep, SF_AllOn);
-
-        Console.Printf("Undrew mask, decremented to stencil level %d", cStencil >> 1);
     }
 
     virtual void draw() {
@@ -440,6 +439,10 @@ class UIView ui {
 
         if(ignoresClipping) {
             clearClip();
+        } else if(clipSelf) {
+            UIBox clipRect;
+            getScreenClip(clipRect);
+            setClip(int(clipRect.pos.x), int(clipRect.pos.y), int(clipRect.size.x), int(clipRect.size.y));
         }
 
         if(backgroundColor != 0) {
@@ -1180,8 +1183,15 @@ class UIView ui {
 
     virtual void getScreenClip(out UIBox ret) {
         UIBox b;
-        b.pos = clipsSubviews ? (0,0) : (-454545, -454545);
-        b.size = clipsSubviews ? frame.size : (999999,999999);
+
+        if(clipsSubviews) {
+            b.pos = (0,0) + (frame.size.x * clipFrame.pos.x, frame.size.y * clipFrame.pos.y);
+            b.size = (frame.size.x * clipFrame.size.x, frame.size.y * clipFrame.size.y);
+        } else {
+            b.pos = (-454545, -454545);
+            b.size = (999999,999999);
+        }
+
         boxToScreenClipped(ret, b);
     }
 
@@ -1312,8 +1322,8 @@ class UIView ui {
         int x = int(pos.x);
         int y = int(pos.y);
         setClip(
-            pos.x, 
-            pos.y,
+            x, 
+            y,
             width * cScale.x, 
             height * cScale.y
         );
