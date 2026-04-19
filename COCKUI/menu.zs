@@ -436,7 +436,17 @@ class UIMenu : GenericMenu {
 		mDownView[button] = v;
 		if(v) {
 			if(ev.IsCtrl && ev.IsShift && developer) {
-				Console.Printf("Button: %d View Hit: %s At: X(%f)  Y(%f)", button, v.getClassName(), mousePos.x, mousePos.y);
+				Console.Printf("Button: %d View Hit: %s%s At: X(%f)  Y(%f)", button, v.getClassName(), v.id != "" ? " \"" .. v.id .. "\"" : "", mousePos.x, mousePos.y);
+				
+				if(developer > 1 && v.parent) {
+					// Print the hierarchy of views under the mouse cursor
+					Console.Printf("Hierarchy:");
+					UIView vv = v;
+					while(vv) {
+						Console.Printf("\t%s%s", vv.getClassName(), vv.id != "" ? " \"" .. vv.id .. "\"" : "");
+						vv = vv.parent;
+					}
+				}
 			}
 			v.onMouseDown(mousePos, ev, button);
 			return true;
