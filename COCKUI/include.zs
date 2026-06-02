@@ -23,6 +23,9 @@
 #include "./animation.zs"
 #include "./drawer.zs"
 #include "./colorpicker.zs"
+#include "./movie_view.zs"
+
+// TODO: This is shite, replace it with something better
 #include "./scriptcode.zs"
 
 #include "./JSON/include.zs"

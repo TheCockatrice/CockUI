@@ -8,3 +8,4 @@
 #include "./vertical_scroll.zs"
 #include "./slider.zs"
 #include "./input_text.zs"
+#include "./movie_view.zs"
