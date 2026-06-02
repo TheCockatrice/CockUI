@@ -437,6 +437,8 @@ class UIMenu : GenericMenu {
 		if(v) {
 			if(ev.IsCtrl && ev.IsShift && developer) {
 				Console.Printf("Button: %d View Hit: %s%s At: X(%f)  Y(%f)", button, v.getClassName(), v.id != "" ? " \"" .. v.id .. "\"" : "", mousePos.x, mousePos.y);
+				Console.Printf("\tView Frame: X(%f) Y(%f) W(%f) H(%f)", v.frame.pos.x, v.frame.pos.y, v.frame.size.x, v.frame.size.y);
+				Console.Printf("\tClip Frame: X(%f) Y(%f) W(%f) H(%f)", v.clipFrame.pos.x, v.clipFrame.pos.y, v.clipFrame.size.x, v.clipFrame.size.y);
 				
 				if(developer > 1 && v.parent) {
 					// Print the hierarchy of views under the mouse cursor
