@@ -41,6 +41,30 @@ class UITexture {
 			TexMan.UnloadTexture(texID);
 		}
 	}
+
+	ui bool assign(string path) {
+		path = path;
+		texID = TexMan.checkForTexture(path, TexMan.Type_Any);
+		size = TexMan.getScaledSize(texID);
+
+		if(developer && !texID.isValid() && path != "") {
+			Console.Printf("\c[YELLOW]Warning: UITexture(%s): Error loading texture", path);
+		}
+
+		return texID.isValid();
+	}
+
+	ui bool assignTex(TextureID tid) {
+		path = "";
+		texID = tid;
+		size = TexMan.getScaledSize(texID);
+
+		if(developer && !texID.isValid() && int(tid) != 0) {
+			Console.Printf("\c[YELLOW]Warning: UITexture(%d): Error loading texture", tid);
+		}
+
+		return texID.isValid();
+	}
 }
 
 struct UISTexture {
