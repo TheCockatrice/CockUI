@@ -275,7 +275,7 @@ class UIImage : UIView {
                 pos = b.pos + (b.size / 2.0) - (size / 2.0);
                 break;
             case Image_Aspect_Fill:
-                {
+                if(tex.size.x > 0 && tex.size.y > 0) {
                     double aspect = tex.size.x / tex.size.y;
                     double target_aspect = b.size.x / b.size.y;
 
@@ -283,10 +283,13 @@ class UIImage : UIView {
                     size = (size.x * imgScale.x, size.y * imgScale.y);
                     pos = makePos(b, size);
                     //pos = b.pos + (b.size / 2.0) - (size / 2.0);
+                } else {
+                    size = b.size;
+                    pos = makePos(b, size);
                 }
                 break;
             case Image_Aspect_Scale:
-                {
+                if(tex.size.x > 0 && tex.size.y > 0) {
                     double aspect = tex.size.x / tex.size.y;
 
                     size = (tex.size.x * imgScale.x * cScale.x, tex.size.y * imgScale.y * cScale.y);
@@ -306,10 +309,13 @@ class UIImage : UIView {
                     }
 
                     pos = makePos(b, size);
+                } else {
+                    size = b.size;
+                    pos = makePos(b, size);
                 }
             case Image_Aspect_Scale:
             case Image_Aspect_Fit:
-                {
+                if(tex.size.x > 0 && tex.size.y > 0) {
                     double aspect = tex.size.x / tex.size.y;
 
                     size = (tex.size.x * imgScale.x * cScale.x, tex.size.y * imgScale.y * cScale.y);
@@ -330,6 +336,9 @@ class UIImage : UIView {
                         }
                     }
 
+                    pos = makePos(b, size);
+                } else {
+                    size = b.size;
                     pos = makePos(b, size);
                 }
                 break;
@@ -406,7 +415,7 @@ class UIImage : UIView {
                     DTA_LegacyRenderStyle, renderStyle
                 );
             }
-        } else if(tex) {
+        } else if(tex && tex.texID.isValid()) {
             Vector2 pos, size;
             [pos, size] = getImgPos(b);
 
@@ -465,15 +474,15 @@ class UIImage : UIView {
                     );
                 }
             } else {
-                Vector2 texsize = TexMan.GetScaledSize(tex.texID);
-                Vector2 cpos = (rotCenter.x * texSize.x, rotCenter.y * texSize.y);
+                Vector2 texsize = tex.size;
+                Vector2 cpos = (rotCenter.x * texsize.x, rotCenter.y * texsize.y);
 
                 if(drawCanvas) {
                     drawCanvas.DrawTexture(
                         tex.texID, 
                         true, 
                         pos.x + (rotCenter.x * size.x),
-                        pos.y + (rotCenter.x * size.x),
+                        pos.y + (rotCenter.y * size.x),
                         DTA_DestWidthF, size.x,
                         DTA_DestHeightF, size.y,
                         DTA_Alpha, cAlpha,
@@ -494,7 +503,7 @@ class UIImage : UIView {
                         tex.texID, 
                         true, 
                         pos.x + (rotCenter.x * size.x),
-                        pos.y + (rotCenter.x * size.x),
+                        pos.y + (rotCenter.y * size.y),
                         DTA_DestWidthF, size.x,
                         DTA_DestHeightF, size.y,
                         DTA_Alpha, cAlpha,
