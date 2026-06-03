@@ -145,6 +145,7 @@ class MovieView : UIImage {
                     createPlayer();
                     player.start();
                 } else {
+                    if(tex) tex.setInvalid();
                     playing = false;
                     isComplete = true;
                     return;

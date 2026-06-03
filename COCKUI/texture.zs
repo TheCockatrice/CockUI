@@ -65,6 +65,12 @@ class UITexture {
 
 		return texID.isValid();
 	}
+
+	ui void setInvalid() {
+		path = "";
+		texID.setInvalid();
+		size = (0, 0);
+	}
 }
 
 struct UISTexture {
@@ -108,6 +114,12 @@ struct UISTexture {
 		if(texID.isValid()) {
 			TexMan.UnloadTexture(texID);
 		}
+	}
+
+	ui void setInvalid() {
+		path = "";
+		texID.setInvalid();
+		size = (0, 0);
 	}
 }
 
